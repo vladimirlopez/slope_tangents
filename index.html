@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadratic Regression & Tangent Lines</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Quadratic Regression & Tangent Line Calculator</h1>
+            <p>Enter at least 3 data points to perform quadratic regression and explore tangent lines</p>
+        </header>
+
+        <main>
+            <div class="content-grid">
+                <!-- Data Input Section -->
+                <section class="data-input">
+                    <h2>Data Points</h2>
+                    <div class="table-container">
+                        <table id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>Point #</th>
+                                    <th>X Value</th>
+                                    <th>Y Value</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTableBody">
+                                <!-- Initial rows will be added by JavaScript -->
+                            </tbody>
+                        </table>
+                        <div class="table-controls">
+                            <button id="addRowBtn" class="btn btn-secondary">Add Row</button>
+                            <button id="clearDataBtn" class="btn btn-secondary">Clear All</button>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-controls">
+                        <button id="plotBtn" class="btn btn-primary">Plot & Analyze</button>
+                        <div class="status" id="statusMessage"></div>
+                    </div>
+                </section>
+
+                <!-- Visualization Section -->
+                <section class="visualization">
+                    <h2>Graph</h2>
+                    <div class="chart-container">
+                        <canvas id="chart"></canvas>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Tangent Line Controls -->
+            <section class="tangent-controls" id="tangentControls">
+                <h2>Tangent Line Analysis</h2>
+                <div class="controls-grid">
+                    <div class="slider-container">
+                        <label for="xSlider">Select X Value:</label>
+                        <input type="range" id="xSlider" min="0" max="10" step="0.1" value="0">
+                        <span id="xValue">0</span>
+                    </div>
+                    <div class="results">
+                        <div class="result-item">
+                            <label>Point on curve:</label>
+                            <span id="curvePoint">(0, 0)</span>
+                        </div>
+                        <div class="result-item">
+                            <label>Slope at point:</label>
+                            <span id="slopeValue">0</span>
+                        </div>
+                        <div class="result-item">
+                            <label>Tangent equation:</label>
+                            <span id="tangentEquation">y = 0</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Equation Display -->
+            <section class="equation-display" id="equationDisplay">
+                <h2>Quadratic Equation</h2>
+                <div class="equation">
+                    <span id="quadraticEquation">y = ax² + bx + c</span>
+                </div>
+                <div class="coefficients">
+                    <div>a = <span id="coeffA">0</span></div>
+                    <div>b = <span id="coeffB">0</span></div>
+                    <div>c = <span id="coeffC">0</span></div>
+                </div>
+                <div class="r-squared">
+                    R² = <span id="rSquared">0</span>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/utilities.js"></script>
+    <script src="js/data-table.js"></script>
+    <script src="js/parabola.js"></script>
+    <script src="js/tangent.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
