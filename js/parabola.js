@@ -247,26 +247,16 @@ class ParabolaAnalyzer {
         // Generate curve points
         const curvePoints = this.generateCurvePoints(xMin, xMax);
 
-        // Create chart datasets
+        // Create chart datasets (only data points initially)
         const datasets = [
             {
                 label: 'Data Points',
                 data: this.dataPoints,
                 backgroundColor: 'rgba(52, 152, 219, 0.8)',
                 borderColor: 'rgba(52, 152, 219, 1)',
-                pointRadius: 8,
-                pointHoverRadius: 10,
+                pointRadius: 4,
+                pointHoverRadius: 6,
                 showLine: false
-            },
-            {
-                label: 'Quadratic Fit',
-                data: curvePoints,
-                backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                borderColor: 'rgba(231, 76, 60, 1)',
-                borderWidth: 3,
-                pointRadius: 0,
-                fill: false,
-                tension: 0
             }
         ];
 
@@ -283,25 +273,33 @@ class ParabolaAnalyzer {
                     intersect: false,
                     mode: 'point'
                 },
+                onClick: (event, elements) => {
+                    // Get click position relative to chart
+                    const canvasPosition = Chart.helpers.getRelativePosition(event, this.chart);
+                    const dataX = this.chart.scales.x.getValueForPixel(canvasPosition.x);
+                    const dataY = this.chart.scales.y.getValueForPixel(canvasPosition.y);
+                    
+                    // Update the point analysis
+                    this.updatePointAnalysis(dataX);
+                },
                 plugins: {
                     title: {
                         display: true,
                         text: 'Quadratic Regression Analysis',
                         font: {
-                            size: 16,
+                            size: 14,
                             weight: 'bold'
                         }
                     },
                     legend: {
-                        display: true,
-                        position: 'top'
+                        display: false
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
                                 const x = MathUtils.formatNumber(context.parsed.x, 3);
                                 const y = MathUtils.formatNumber(context.parsed.y, 3);
-                                return `${context.dataset.label}: (${x}, ${y})`;
+                                return `(${x}, ${y})`;
                             }
                         }
                     }
@@ -349,44 +347,245 @@ class ParabolaAnalyzer {
     }
 
     /**
-     * Update chart with tangent line
+     * Update chart with tangent line and vertical line
      * @param {number} x - X coordinate for tangent point
-     * @param {Array} tangentPoints - Array of tangent line points
      */
-    updateChartWithTangent(x, tangentPoints) {
+    updatePointAnalysis(x) {
         if (!this.chart) return;
 
         const y = this.evaluateQuadratic(x);
+        const slope = this.calculateDerivative(x);
 
-        // Remove existing tangent and highlight datasets
+        // Remove existing analysis datasets
         this.chart.data.datasets = this.chart.data.datasets.filter(
-            dataset => !dataset.label.includes('Tangent') && !dataset.label.includes('Highlight')
+            dataset => !dataset.label.includes('Tangent') && 
+                      !dataset.label.includes('Vertical') && 
+                      !dataset.label.includes('Selected')
         );
 
-        // Add highlight point
+        // Add vertical line at selected x
+        const yRange = this.getYRange();
+        this.chart.data.datasets.push({
+            label: 'Vertical Line',
+            data: [
+                { x: x, y: yRange.min },
+                { x: x, y: yRange.max }
+            ],
+            backgroundColor: 'rgba(0, 0, 0, 0)',
+            borderColor: 'rgba(128, 128, 128, 0.7)',
+            borderWidth: 1,
+            pointRadius: 0,
+            fill: false,
+            showLine: true,
+            borderDash: [3, 3],
+            order: 3
+        });
+
+        // Add tangent line
+        const tangentPoints = this.generateTangentLine(x, y, slope);
+        this.chart.data.datasets.push({
+            label: 'Tangent Line',
+            data: tangentPoints,
+            backgroundColor: 'rgba(255, 165, 0, 0)',
+            borderColor: 'rgba(255, 140, 0, 1)',
+            borderWidth: 3,
+            pointRadius: 0,
+            fill: false,
+            showLine: true,
+            order: 2
+        });
+
+        // Add selected point highlight
         this.chart.data.datasets.push({
             label: 'Selected Point',
             data: [{ x, y }],
             backgroundColor: 'rgba(46, 204, 113, 1)',
-            borderColor: 'rgba(46, 204, 113, 1)',
-            pointRadius: 12,
-            pointHoverRadius: 14,
+            borderColor: 'rgba(39, 174, 96, 1)',
+            pointRadius: 6,
+            pointHoverRadius: 8,
             showLine: false,
             order: 1
         });
 
-        // Add tangent line
-        this.chart.data.datasets.push({
-            label: 'Tangent Line',
-            data: tangentPoints,
-            backgroundColor: 'rgba(155, 89, 182, 0.1)',
-            borderColor: 'rgba(155, 89, 182, 1)',
-            borderWidth: 2,
-            pointRadius: 0,
-            fill: false,
-            borderDash: [5, 5],
-            order: 2
-        });
+        this.chart.update('none');
+
+        // Update the point information display
+        this.updatePointInfoDisplay(x, y, slope);
+    }
+
+    /**
+     * Generate points for the tangent line
+     * @param {number} x0 - X coordinate of tangent point
+     * @param {number} y0 - Y coordinate of tangent point
+     * @param {number} slope - Slope of tangent line
+     * @returns {Array} Array of {x, y} points for tangent line
+     */
+    generateTangentLine(x0, y0, slope) {
+        // Calculate the range for the tangent line
+        const xValues = this.dataPoints.map(p => p.x);
+        const xRange = MathUtils.findRange(xValues);
+        const totalRange = xRange.max - xRange.min;
+        const lineLength = totalRange * 0.6; // Tangent line extends 60% of the total range in each direction
+        
+        const xStart = x0 - lineLength / 2;
+        const xEnd = x0 + lineLength / 2;
+        
+        // Calculate y values using point-slope form: y - y0 = m(x - x0)
+        const yStart = y0 + slope * (xStart - x0);
+        const yEnd = y0 + slope * (xEnd - x0);
+        
+        return [
+            { x: xStart, y: yStart },
+            { x: xEnd, y: yEnd }
+        ];
+    }
+
+    /**
+     * Get the Y range for the chart
+     * @returns {object} Object with min and max y values
+     */
+    getYRange() {
+        if (!this.chart || !this.chart.scales.y) {
+            return { min: -10, max: 10 };
+        }
+        return {
+            min: this.chart.scales.y.min,
+            max: this.chart.scales.y.max
+        };
+    }
+
+    /**
+     * Update the point information display
+     * @param {number} x - X coordinate
+     * @param {number} y - Y coordinate  
+     * @param {number} slope - Slope value
+     */
+    updatePointInfoDisplay(x, y, slope) {
+        // Show the graph info box
+        const graphInfoBox = document.getElementById('graphInfoBox');
+        if (graphInfoBox) {
+            graphInfoBox.classList.add('show');
+        }
+
+        // Update info box values
+        const infoX = document.getElementById('infoX');
+        const infoSlope = document.getElementById('infoSlope');
+        
+        if (infoX) {
+            infoX.textContent = MathUtils.formatNumber(x, 3);
+        }
+        
+        if (infoSlope) {
+            infoSlope.textContent = MathUtils.formatNumber(slope, 3);
+        }
+
+        // Show the point info section (keep for detailed analysis)
+        const pointInfo = document.getElementById('pointInfo');
+        if (pointInfo) {
+            pointInfo.classList.add('show');
+        }
+
+        // Update selected point display
+        const selectedPointElement = document.getElementById('selectedPoint');
+        if (selectedPointElement) {
+            const xFormatted = MathUtils.formatNumber(x, 3);
+            const yFormatted = MathUtils.formatNumber(y, 3);
+            selectedPointElement.textContent = `(${xFormatted}, ${yFormatted})`;
+        }
+
+        // Update slope display
+        const pointSlopeElement = document.getElementById('pointSlope');
+        if (pointSlopeElement) {
+            pointSlopeElement.textContent = MathUtils.formatNumber(slope, 3);
+        }
+
+        // Update tangent equation display
+        const tangentEquationElement = document.getElementById('tangentEquation');
+        if (tangentEquationElement) {
+            const equation = this.getTangentEquation(x, y, slope);
+            tangentEquationElement.textContent = equation;
+        }
+    }
+
+    /**
+     * Get the equation of the tangent line in slope-intercept form
+     * @param {number} x0 - X coordinate of tangent point
+     * @param {number} y0 - Y coordinate of tangent point
+     * @param {number} slope - Slope of tangent line
+     * @returns {string} Tangent line equation
+     */
+    getTangentEquation(x0, y0, slope) {
+        // Calculate y-intercept: b = y0 - m * x0
+        const yIntercept = y0 - slope * x0;
+        
+        let equation = 'y = ';
+        
+        // Format slope
+        if (Math.abs(slope) === 1) {
+            equation += slope === 1 ? 'x' : '-x';
+        } else {
+            equation += MathUtils.formatNumber(slope, 3) + 'x';
+        }
+        
+        // Format y-intercept
+        if (yIntercept !== 0) {
+            if (yIntercept > 0) {
+                equation += ' + ' + MathUtils.formatNumber(yIntercept, 3);
+            } else {
+                equation += ' - ' + MathUtils.formatNumber(Math.abs(yIntercept), 3);
+            }
+        }
+        
+        return equation;
+    }
+
+    /**
+     * Update chart with tangent line (legacy method for compatibility)
+     * @param {number} x - X coordinate for tangent point
+     * @param {Array} tangentPoints - Array of tangent line points
+     */
+    updateChartWithTangent(x, tangentPoints) {
+        // Use the new method instead
+        this.updatePointAnalysis(x);
+    }
+
+    /**
+     * Add or remove quadratic fit line from chart
+     * @param {boolean} show - Whether to show the quadratic fit
+     */
+    toggleQuadraticFit(show = true) {
+        if (!this.chart) return;
+
+        // Remove existing quadratic fit
+        this.chart.data.datasets = this.chart.data.datasets.filter(
+            dataset => dataset.label !== 'Quadratic Fit'
+        );
+
+        if (show) {
+            // Calculate plot range
+            const xValues = this.dataPoints.map(p => p.x);
+            const xRange = MathUtils.findRange(xValues);
+            const padding = (xRange.max - xRange.min) * 0.2;
+            const xMin = xRange.min - padding;
+            const xMax = xRange.max + padding;
+
+            // Generate curve points
+            const curvePoints = this.generateCurvePoints(xMin, xMax);
+
+            // Add quadratic fit dataset
+            this.chart.data.datasets.push({
+                label: 'Quadratic Fit',
+                data: curvePoints,
+                backgroundColor: 'rgba(231, 76, 60, 0)',
+                borderColor: 'rgba(231, 76, 60, 1)',
+                borderWidth: 2,
+                pointRadius: 0,
+                fill: false,
+                tension: 0,
+                showLine: true,
+                order: 1
+            });
+        }
 
         this.chart.update('none');
     }

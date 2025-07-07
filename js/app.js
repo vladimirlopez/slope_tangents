@@ -32,6 +32,8 @@ class QuadraticRegressionApp {
         
         // Get DOM elements
         this.plotBtn = DOMUtils.getElementById('plotBtn');
+        this.fitBtn = DOMUtils.getElementById('fitBtn');
+        this.addRowBtn = DOMUtils.getElementById('addRowBtn');
         this.canvas = DOMUtils.getElementById('chart');
         
         // Setup event listeners
@@ -50,6 +52,20 @@ class QuadraticRegressionApp {
         // Plot button event listener
         if (this.plotBtn) {
             this.plotBtn.addEventListener('click', () => this.performAnalysis());
+        }
+
+        // Fit button event listener
+        if (this.fitBtn) {
+            this.fitBtn.addEventListener('click', () => this.toggleQuadraticFit());
+        }
+
+        // Add row button event listener
+        if (this.addRowBtn) {
+            this.addRowBtn.addEventListener('click', () => {
+                if (dataTable) {
+                    dataTable.addRow();
+                }
+            });
         }
 
         // Keyboard shortcuts
@@ -115,15 +131,16 @@ class QuadraticRegressionApp {
             // Create/update chart
             if (this.canvas) {
                 parabolaAnalyzer.createChart(this.canvas);
+                
+                // Show the fit button after successful plot
+                if (this.fitBtn) {
+                    this.fitBtn.classList.add('show');
+                }
             }
-            
-            // Setup tangent analyzer
-            tangentAnalyzer = new TangentAnalyzer(parabolaAnalyzer);
-            tangentAnalyzer.setupControls(dataPoints);
             
             // Show success message
             DOMUtils.showStatus(
-                `Analysis complete! R² = ${MathUtils.formatNumber(results.rSquared, 4)}`, 
+                `Data plotted! R² = ${MathUtils.formatNumber(results.rSquared, 4)}`, 
                 'success'
             );
             
@@ -143,8 +160,11 @@ class QuadraticRegressionApp {
     updateEquationDisplay(results) {
         const { coefficients, rSquared } = results;
         
-        // Show equation display section
-        DOMUtils.toggleElement('equationDisplay', true);
+        // Show analysis results section
+        const analysisResults = DOMUtils.getElementById('analysisResults');
+        if (analysisResults) {
+            analysisResults.classList.add('show');
+        }
         
         // Update equation string
         const equationElement = DOMUtils.getElementById('quadraticEquation');
@@ -210,11 +230,6 @@ class QuadraticRegressionApp {
             equation: parabolaAnalyzer.getEquationString()
         };
 
-        // Add tangent information if available
-        if (tangentAnalyzer) {
-            results.currentTangent = tangentAnalyzer.getTangentInfo();
-        }
-
         return results;
     }
 
@@ -250,8 +265,15 @@ class QuadraticRegressionApp {
             }
             
             // Hide analysis sections
-            DOMUtils.toggleElement('tangentControls', false);
-            DOMUtils.toggleElement('equationDisplay', false);
+            const analysisResults = document.getElementById('analysisResults');
+            if (analysisResults) {
+                analysisResults.classList.remove('show');
+            }
+            
+            const pointInfo = document.getElementById('pointInfo');
+            if (pointInfo) {
+                pointInfo.classList.remove('show');
+            }
             
             // Clear chart
             if (parabolaAnalyzer && parabolaAnalyzer.chart) {
@@ -261,10 +283,35 @@ class QuadraticRegressionApp {
             
             // Reset analyzers
             parabolaAnalyzer = new ParabolaAnalyzer();
-            tangentAnalyzer = null;
             
             DOMUtils.hideStatus();
             DOMUtils.showStatus('Application reset successfully!', 'success');
+        }
+    }
+
+    /**
+     * Toggle quadratic fit display
+     */
+    toggleQuadraticFit() {
+        if (!parabolaAnalyzer || !parabolaAnalyzer.chart) {
+            DOMUtils.showStatus('Please plot data points first', 'error');
+            return;
+        }
+
+        const isCurrentlyShowing = parabolaAnalyzer.chart.data.datasets.some(
+            dataset => dataset.label === 'Quadratic Fit'
+        );
+
+        if (isCurrentlyShowing) {
+            // Hide quadratic fit
+            parabolaAnalyzer.toggleQuadraticFit(false);
+            this.fitBtn.textContent = 'Show Quadratic Fit';
+            DOMUtils.showStatus('Quadratic fit hidden', 'info');
+        } else {
+            // Show quadratic fit
+            parabolaAnalyzer.toggleQuadraticFit(true);
+            this.fitBtn.textContent = 'Hide Quadratic Fit';
+            DOMUtils.showStatus('Quadratic fit displayed', 'success');
         }
     }
 }
@@ -293,12 +340,6 @@ document.addEventListener('keydown', (e) => {
         if (app) {
             app.reset();
         }
-    }
-    
-    // Space to jump to vertex (when tangent analyzer is active)
-    if (e.key === ' ' && tangentAnalyzer) {
-        e.preventDefault();
-        tangentAnalyzer.jumpToVertex();
     }
 });
 

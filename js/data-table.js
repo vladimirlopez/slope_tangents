@@ -5,26 +5,15 @@
 class DataTable {
     constructor() {
         this.tableBody = DOMUtils.getElementById('dataTableBody');
-        this.addRowBtn = DOMUtils.getElementById('addRowBtn');
-        this.clearDataBtn = DOMUtils.getElementById('clearDataBtn');
         this.rowCount = 0;
         
         this.init();
     }
 
     /**
-     * Initialize the data table with event listeners and initial rows
+     * Initialize the data table with initial rows
      */
     init() {
-        // Add event listeners
-        if (this.addRowBtn) {
-            this.addRowBtn.addEventListener('click', () => this.addRow());
-        }
-        
-        if (this.clearDataBtn) {
-            this.clearDataBtn.addEventListener('click', () => this.clearAllData());
-        }
-
         // Add initial rows
         this.addInitialRows();
     }
@@ -33,8 +22,8 @@ class DataTable {
      * Add initial rows to the table
      */
     addInitialRows() {
-        // Add 5 initial rows
-        for (let i = 0; i < 5; i++) {
+        // Add 4 initial rows (reduced from 5)
+        for (let i = 0; i < 4; i++) {
             this.addRow();
         }
     }
@@ -51,7 +40,6 @@ class DataTable {
         row.setAttribute('data-row-id', this.rowCount);
         
         row.innerHTML = `
-            <td>${this.rowCount}</td>
             <td>
                 <input type="number" 
                        class="x-input" 
@@ -65,12 +53,6 @@ class DataTable {
                        step="any" 
                        placeholder="Enter y value"
                        value="${y}">
-            </td>
-            <td>
-                <button class="btn btn-danger remove-row-btn" 
-                        onclick="dataTable.removeRow(${this.rowCount})">
-                    Remove
-                </button>
             </td>
         `;
 
@@ -89,31 +71,6 @@ class DataTable {
         if (yInput) {
             yInput.addEventListener('input', () => this.validateInput(yInput));
         }
-    }
-
-    /**
-     * Remove a row from the table
-     * @param {number} rowId - ID of the row to remove
-     */
-    removeRow(rowId) {
-        const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
-        if (row && this.tableBody) {
-            this.tableBody.removeChild(row);
-            this.updateRowNumbers();
-        }
-    }
-
-    /**
-     * Update row numbers after deletion
-     */
-    updateRowNumbers() {
-        const rows = this.tableBody ? this.tableBody.querySelectorAll('tr') : [];
-        rows.forEach((row, index) => {
-            const numberCell = row.querySelector('td:first-child');
-            if (numberCell) {
-                numberCell.textContent = index + 1;
-            }
-        });
     }
 
     /**
@@ -179,8 +136,28 @@ class DataTable {
             DOMUtils.hideStatus();
             
             // Hide analysis sections
-            DOMUtils.toggleElement('tangentControls', false);
-            DOMUtils.toggleElement('equationDisplay', false);
+            const analysisResults = document.getElementById('analysisResults');
+            if (analysisResults) {
+                analysisResults.classList.remove('show');
+            }
+            
+            const pointInfo = document.getElementById('pointInfo');
+            if (pointInfo) {
+                pointInfo.classList.remove('show');
+            }
+            
+            // Hide graph info box
+            const graphInfoBox = document.getElementById('graphInfoBox');
+            if (graphInfoBox) {
+                graphInfoBox.classList.remove('show');
+            }
+            
+            // Hide fit button
+            const fitBtn = document.getElementById('fitBtn');
+            if (fitBtn) {
+                fitBtn.classList.remove('show');
+                fitBtn.textContent = 'Show Quadratic Fit';
+            }
             
             // Clear the chart if it exists
             if (window.chartInstance) {
