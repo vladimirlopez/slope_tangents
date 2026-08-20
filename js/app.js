@@ -29,6 +29,7 @@ class QuadraticRegressionApp {
         // Initialize global instances
         dataTable = new DataTable();
         parabolaAnalyzer = new ParabolaAnalyzer();
+        tangentAnalyzer = new TangentAnalyzer(parabolaAnalyzer);
         
         // Get DOM elements
         this.plotBtn = DOMUtils.getElementById('plotBtn');
@@ -135,6 +136,9 @@ class QuadraticRegressionApp {
                 // Show the fit button after successful plot
                 if (this.fitBtn) {
                     this.fitBtn.classList.add('show');
+                }
+                if (tangentAnalyzer) {
+                    tangentAnalyzer.setupControls(dataPoints);
                 }
             }
             

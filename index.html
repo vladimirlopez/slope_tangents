@@ -58,6 +58,18 @@
                             </div>
                         </div>
                     </div>
+                    <div class="tangent-controls" id="tangentControls" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <h3>Tangent Line Explorer</h3>
+                        <div class="slider-container" style="margin: 10px 0;">
+                            <label for="xSlider">Move X:</label>
+                            <input type="range" id="xSlider" min="0" max="10" step="0.1" style="width: 100%;">
+                        </div>
+                        <div class="tangent-info" style="display: flex; justify-content: space-between;">
+                            <div>X: <span id="xValue">0</span></div>
+                            <div>Point: <span id="curvePoint">(0, 0)</span></div>
+                            <div>Slope: <span id="slopeValue">0</span></div>
+                        </div>
+                    </div>
                 </section>
             </div>
 
@@ -96,6 +108,7 @@
     <script src="js/utilities.js"></script>
     <script src="js/data-table.js"></script>
     <script src="js/parabola.js"></script>
+    <script src="js/tangent.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
