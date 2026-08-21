@@ -226,6 +226,41 @@ class ParabolaAnalyzer {
      * Create or update the chart visualization
      * @param {HTMLCanvasElement} canvas - Canvas element for the chart
      */
+    
+    createEmptyChart(canvas) {
+        if (!canvas) return;
+        if (this.chart) this.chart.destroy();
+        
+        const config = {
+            type: 'scatter',
+            data: { datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Quadratic Regression Analysis', font: { size: 14, weight: 'bold' } },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        type: 'linear', position: 'bottom',
+                        min: -10, max: 10,
+                        title: { display: true, text: 'X Values', font: { size: 14, weight: 'bold' } },
+                        grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
+                    },
+                    y: {
+                        min: -10, max: 10,
+                        title: { display: true, text: 'Y Values', font: { size: 14, weight: 'bold' } },
+                        grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
+                    }
+                }
+            }
+        };
+        this.chart = new Chart(canvas, config);
+        window.chartInstance = this.chart;
+    }
+
+
     createChart(canvas) {
         if (!canvas) {
             console.error('Canvas element not provided');

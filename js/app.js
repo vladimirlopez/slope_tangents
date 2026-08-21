@@ -43,6 +43,7 @@ class QuadraticRegressionApp {
         // Add sample data button (for development/demo)
         this.addSampleDataButton();
         
+        if (this.canvas) { parabolaAnalyzer.createEmptyChart(this.canvas); }
         console.log('Quadratic Regression App initialized successfully');
     }
 

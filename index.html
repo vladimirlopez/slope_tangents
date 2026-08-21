@@ -3,101 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quadratic Regression & Tangent Lines</title>
+    <title>Quadratic Regression & Tangent Lines | The Thinking Experiment</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="https://vladimirlopez.github.io/the-thinking-experiment/assets/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="https://vladimirlopez.github.io/the-thinking-experiment/assets/favicon-16.png" />
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Quadratic Regression & Tangent Line Calculator</h1>
-            <p>Enter at least 3 data points to perform quadratic regression and explore tangent lines</p>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <div class="shell">
+        <header class="hero">
+            <div class="hero-top">
+                <div>
+                    <p class="kicker">The Thinking Experiment</p>
+                    <h1>Quadratic Regression & Tangent Line Calculator</h1>
+                    <p class="subtitle">Enter at least 3 data points to perform quadratic regression and explore tangent lines for finding instantaneous velocities.</p>
+                </div>
+            </div>
         </header>
 
-        <main>
-            <div class="content-grid">
-                <!-- Data Input Section -->
-                <section class="data-input">
-                    <h2>Data Points</h2>
-                    <div class="table-container">
-                        <table id="dataTable">
-                            <thead>
-                                <tr>
-                                    <th>X Value</th>
-                                    <th>Y Value</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dataTableBody">
-                                <!-- Initial rows will be added by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="analysis-controls">
-                        <button id="plotBtn" class="btn btn-primary">Plot Data Points</button>
-                        <button id="fitBtn" class="btn btn-secondary">Show Quadratic Fit</button>
-                        <button id="addRowBtn" class="btn btn-secondary">+ Row</button>
-                        <div class="status" id="statusMessage"></div>
-                    </div>
-                </section>
+        <main class="app-layout">
+            <section class="panel narrow data-input">
+                <h2>Data Points</h2>
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>X Value</th>
+                                <th>Y Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="button-row compact">
+                    <button id="plotBtn" class="primary">Plot Data Points</button>
+                    <button id="fitBtn" class="ghost">Show Quadratic Fit</button>
+                    <button id="addRowBtn" class="ghost">+ Row</button>
+                </div>
+                <div class="status" id="statusMessage" style="display:none"></div>
 
-                <!-- Visualization Section -->
-                <section class="visualization">
-                    <h2>Graph</h2>
-                    <div class="chart-container">
-                        <canvas id="chart"></canvas>
-                        <div class="graph-info-box" id="graphInfoBox">
-                            <div class="info-item">
-                                <span class="info-label">X:</span> 
-                                <span class="info-value" id="infoX">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Slope:</span> 
-                                <span class="info-value" id="infoSlope">-</span>
-                            </div>
+                <div class="preset-box tangent-controls" id="tangentControls" style="display: none;">
+                    <h3>Tangent Line Explorer</h3>
+                    <label class="range-label">
+                        Move X: <span id="xValue">0</span>
+                        <input type="range" id="xSlider" min="0" max="10" step="0.1" value="0">
+                    </label>
+                    <div class="metrics-grid" style="margin-top: 10px;">
+                        <div>
+                            <dt>Point</dt>
+                            <dd id="curvePoint">(0, 0)</dd>
+                        </div>
+                        <div>
+                            <dt>Slope</dt>
+                            <dd id="slopeValue">0</dd>
                         </div>
                     </div>
-                    <div class="tangent-controls" id="tangentControls" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
-                        <h3>Tangent Line Explorer</h3>
-                        <div class="slider-container" style="margin: 10px 0;">
-                            <label for="xSlider">Move X:</label>
-                            <input type="range" id="xSlider" min="0" max="10" step="0.1" style="width: 100%;">
-                        </div>
-                        <div class="tangent-info" style="display: flex; justify-content: space-between;">
-                            <div>X: <span id="xValue">0</span></div>
-                            <div>Point: <span id="curvePoint">(0, 0)</span></div>
-                            <div>Slope: <span id="slopeValue">0</span></div>
-                        </div>
-                    </div>
-                </section>
-            </div>
+                </div>
+            </section>
 
-            <!-- Consolidated Analysis Results -->
-            <section class="analysis-results" id="analysisResults">
+            <section class="panel wide visualization">
+                <h2>Graph</h2>
+                <div class="chart-container" style="position: relative; height: 500px; width: 100%;">
+                    <canvas id="chart"></canvas>
+                    <div class="graph-info-box" id="graphInfoBox" style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.95); border: 1px solid #ccc; border-radius: 5px; padding: 8px; font-size: 12px; min-width: 150px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000;">
+                        <div class="info-item">
+                            <span class="info-label">X:</span> 
+                            <span class="info-value" id="infoX">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Slope:</span> 
+                            <span class="info-value" id="infoSlope">-</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel full analysis-results" id="analysisResults" style="display: none;">
                 <h2>Analysis Results</h2>
-                <div class="results-grid">
-                    <div class="equation-section">
-                        <h3>Quadratic Equation</h3>
-                        <div class="equation">
-                            <span id="quadraticEquation">y = ax² + bx + c</span>
-                        </div>
-                        <div class="coefficients">
-                            <div>a = <span id="coeffA">0</span></div>
-                            <div>b = <span id="coeffB">0</span></div>
-                            <div>c = <span id="coeffC">0</span></div>
-                        </div>
-                        <div class="r-squared">
-                            R² = <span id="rSquared">0</span>
-                        </div>
+                <div class="metrics-grid">
+                    <div>
+                        <dt>Quadratic Equation</dt>
+                        <dd id="quadraticEquation">y = ax² + bx + c</dd>
                     </div>
-                    <div class="point-info" id="pointInfo">
-                        <h3>Selected Point Analysis</h3>
-                        <div class="point-details">
-                            <div>Point: <span id="selectedPoint">(0, 0)</span></div>
-                            <div>Slope: <span id="pointSlope">0</span></div>
-                            <div>Tangent: <span id="tangentEquation">y = 0</span></div>
-                        </div>
+                    <div>
+                        <dt>Coefficients</dt>
+                        <dd>a = <span id="coeffA">0</span>, b = <span id="coeffB">0</span>, c = <span id="coeffC">0</span></dd>
+                    </div>
+                    <div>
+                        <dt>R²</dt>
+                        <dd id="rSquared">0</dd>
+                    </div>
+                    <div id="pointInfo" style="display: none; grid-column: span 3;">
+                        <dt>Selected Point Analysis</dt>
+                        <dd>Point: <span id="selectedPoint">(0, 0)</span> | Slope: <span id="pointSlope">0</span> | Tangent: <span id="tangentEquation">y = 0</span></dd>
                     </div>
                 </div>
             </section>
