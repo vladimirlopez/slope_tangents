@@ -3,6 +3,16 @@
  */
 
 class ParabolaAnalyzer {
+
+    getAxisLabels() {
+        const xEl = document.getElementById('xLabelInput');
+        const yEl = document.getElementById('yLabelInput');
+        return {
+            x: xEl ? xEl.value || 'X Value' : 'X Value',
+            y: yEl ? yEl.value || 'Y Value' : 'Y Value'
+        };
+    }
+
     constructor() {
         this.coefficients = { a: 0, b: 0, c: 0 };
         this.rSquared = 0;
@@ -245,12 +255,12 @@ class ParabolaAnalyzer {
                     x: {
                         type: 'linear', position: 'bottom',
                         min: -10, max: 10,
-                        title: { display: true, text: 'X Values', font: { size: 14, weight: 'bold' } },
+                        title: { display: true, text: this.getAxisLabels().x, font: { size: 14, weight: 'bold' } },
                         grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
                     },
                     y: {
                         min: -10, max: 10,
-                        title: { display: true, text: 'Y Values', font: { size: 14, weight: 'bold' } },
+                        title: { display: true, text: this.getAxisLabels().y, font: { size: 14, weight: 'bold' } },
                         grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
                     }
                 }
@@ -345,7 +355,7 @@ class ParabolaAnalyzer {
                         position: 'bottom',
                         title: {
                             display: true,
-                            text: 'X Values',
+                            text: this.getAxisLabels().x,
                             font: {
                                 size: 14,
                                 weight: 'bold'
@@ -359,7 +369,7 @@ class ParabolaAnalyzer {
                     y: {
                         title: {
                             display: true,
-                            text: 'Y Values',
+                            text: this.getAxisLabels().y,
                             font: {
                                 size: 14,
                                 weight: 'bold'

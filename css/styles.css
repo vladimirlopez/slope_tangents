@@ -442,7 +442,7 @@ th {
 }
 
 /* Custom overrides for slope-tangents app */
-td input { width: 100%; border: none; background: transparent; padding: 2px; font-size: inherit; text-align: center; border-radius: 0; }
+td input { width: 100%; border: none; background: transparent; padding: 6px 2px; font-size: 1rem; text-align: center; border-radius: 0; }
 td input:focus { background: #e3f2fd; outline: 2px solid #0f7e9b; }
 th, td { text-align: center; }
 
@@ -466,3 +466,6 @@ th, td { text-align: center; }
 
 #graphInfoBox { display: none; }
 #graphInfoBox.show { display: block !important; }
+
+.header-input { width: 100%; border: none; background: transparent; padding: 2px; font-size: inherit; font-weight: inherit; font-family: inherit; text-align: center; color: inherit; border-radius: 4px; outline: none; }
+.header-input:focus { background: #fff; outline: 2px solid #0f7e9b; }

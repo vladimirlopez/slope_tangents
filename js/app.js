@@ -37,6 +37,21 @@ class QuadraticRegressionApp {
         this.addRowBtn = DOMUtils.getElementById('addRowBtn');
         this.canvas = DOMUtils.getElementById('chart');
         
+        
+        // Setup axis label updates
+        const xLabel = document.getElementById('xLabelInput');
+        const yLabel = document.getElementById('yLabelInput');
+        const updateLabels = () => {
+            if (parabolaAnalyzer && parabolaAnalyzer.chart) {
+                const labels = parabolaAnalyzer.getAxisLabels();
+                parabolaAnalyzer.chart.options.scales.x.title.text = labels.x;
+                parabolaAnalyzer.chart.options.scales.y.title.text = labels.y;
+                parabolaAnalyzer.chart.update('none');
+            }
+        };
+        if (xLabel) xLabel.addEventListener('input', updateLabels);
+        if (yLabel) yLabel.addEventListener('input', updateLabels);
+
         // Setup event listeners
         this.setupEventListeners();
         
