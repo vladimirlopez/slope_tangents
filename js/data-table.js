@@ -16,6 +16,75 @@ class DataTable {
     init() {
         // Add initial rows
         this.addInitialRows();
+        
+        // Add paste event listener
+        if (this.tableBody) {
+            this.tableBody.addEventListener('paste', this.handlePaste.bind(this));
+        }
+    }
+
+    /**
+     * Handle paste events for importing data from Excel/Google Docs
+     */
+    handlePaste(e) {
+        e.preventDefault();
+        
+        const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+        if (!pasteData) return;
+        
+        const rows = pasteData.split(/\r\n|\n|\r/);
+        
+        const targetElement = e.target;
+        let startRowIndex = 0;
+        
+        if (targetElement && targetElement.tagName === 'INPUT') {
+            const tr = targetElement.closest('tr');
+            if (tr) {
+                const allTrs = Array.from(this.tableBody.querySelectorAll('tr'));
+                startRowIndex = allTrs.indexOf(tr);
+            }
+        }
+        
+        let currentRowIndex = startRowIndex;
+        
+        rows.forEach(rowString => {
+            if (rowString.trim() === '') return;
+            
+            const cells = rowString.split(/\t|,/);
+            if (cells.length === 0) return;
+            
+            const xVal = cells[0] ? cells[0].trim() : '';
+            const yVal = cells.length > 1 ? cells[1].trim() : '';
+            
+            if (xVal === '' && yVal === '') return;
+            
+            let rowTr = this.tableBody.querySelectorAll('tr')[currentRowIndex];
+            if (!rowTr) {
+                this.addRow();
+                rowTr = this.tableBody.querySelectorAll('tr')[currentRowIndex];
+            }
+            
+            const inputs = rowTr.querySelectorAll('input');
+            if (inputs.length >= 2) {
+                if (xVal !== '') inputs[0].value = xVal;
+                if (yVal !== '') inputs[1].value = yVal;
+                
+                this.validateInput(inputs[0]);
+                this.validateInput(inputs[1]);
+            }
+            
+            currentRowIndex++;
+        });
+        
+        // Dispatch input event to trigger auto-plot
+        if (this.tableBody) {
+            const inputEvent = new Event('input', { bubbles: true });
+            if (targetElement && targetElement.tagName === 'INPUT') {
+                targetElement.dispatchEvent(inputEvent);
+            } else {
+                this.tableBody.dispatchEvent(inputEvent);
+            }
+        }
     }
 
     /**

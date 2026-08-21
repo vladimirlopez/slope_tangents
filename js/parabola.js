@@ -159,6 +159,7 @@ class ParabolaAnalyzer {
      * @returns {number} y value at x
      */
     evaluateQuadratic(x) {
+        if (!this.coefficients) return 0;
         const { a, b, c } = this.coefficients;
         return a * x * x + b * x + c;
     }
@@ -169,6 +170,7 @@ class ParabolaAnalyzer {
      * @returns {number} Slope at x
      */
     calculateDerivative(x) {
+        if (!this.coefficients) return 0;
         const { a, b } = this.coefficients;
         return 2 * a * x + b;
     }
@@ -198,6 +200,7 @@ class ParabolaAnalyzer {
      * @returns {string} Formatted equation string
      */
     getEquationString() {
+        if (!this.coefficients) return 'y = 0';
         const { a, b, c } = this.coefficients;
         
         let equation = 'y = ';
