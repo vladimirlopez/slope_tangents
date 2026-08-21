@@ -36,6 +36,7 @@ class QuadraticRegressionApp {
         this.fitBtn = DOMUtils.getElementById('fitBtn');
         this.tangentBtn = DOMUtils.getElementById('tangentBtn');
         this.addRowBtn = DOMUtils.getElementById('addRowBtn');
+        this.exportGraphBtn = DOMUtils.getElementById('exportGraphBtn');
         this.canvas = DOMUtils.getElementById('chart');
         
         
@@ -143,6 +144,44 @@ class QuadraticRegressionApp {
     }
 
     /**
+     * Export the current chart as a PNG image
+     */
+    exportGraph() {
+        if (!this.canvas) return;
+        
+        try {
+            // Create a temporary canvas to ensure white background
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = this.canvas.width;
+            tempCanvas.height = this.canvas.height;
+            const ctx = tempCanvas.getContext('2d');
+            
+            // Draw white background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            
+            // Draw the chart over it
+            ctx.drawImage(this.canvas, 0, 0);
+            
+            // Export
+            const url = tempCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = 'quadratic_regression_graph.png';
+            link.href = url;
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            DOMUtils.showStatus('Graph exported successfully!', 'success');
+        } catch (error) {
+            console.error('Export error:', error);
+            DOMUtils.showStatus('Failed to export graph.', 'error');
+        }
+    }
+
+    /**
      * Setup event listeners
      */
     setupEventListeners() {
@@ -172,6 +211,13 @@ class QuadraticRegressionApp {
                 if (dataTable) {
                     dataTable.addRow();
                 }
+            });
+        }
+        
+        // Export graph button event listener
+        if (this.exportGraphBtn) {
+            this.exportGraphBtn.addEventListener('click', () => {
+                this.exportGraph();
             });
         }
 
