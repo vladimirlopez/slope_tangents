@@ -42,6 +42,7 @@ class QuadraticRegressionApp {
         
         
         
+        
         const tableBody = document.getElementById('dataTableBody');
         if (tableBody) {
             tableBody.addEventListener('input', (e) => {
@@ -58,27 +59,43 @@ class QuadraticRegressionApp {
 
                 const dataPoints = dataTable.getDataPoints().filter(p => !isNaN(p.x) && !isNaN(p.y));
                 
-                // Track current state
-                const isFitShowing = parabolaAnalyzer && parabolaAnalyzer.chart && 
-                    parabolaAnalyzer.chart.data.datasets.some(d => d.label === 'Quadratic Fit');
+                // Track tangent state
                 const isTangentShowing = this.tangentBtn && this.tangentBtn.textContent === 'Hide Tangent Line';
                 
                 if (dataPoints.length > 0) {
                     parabolaAnalyzer.dataPoints = dataPoints;
-                    parabolaAnalyzer.createChart(this.canvas);
                     
-                    if (isFitShowing && dataPoints.length >= 3) {
+                    if (dataPoints.length >= 3) {
                         parabolaAnalyzer.performQuadraticRegression(dataPoints);
+                        const results = {
+                            coefficients: parabolaAnalyzer.coefficients,
+                            rSquared: parabolaAnalyzer.rSquared
+                        };
+                        this.updateEquationDisplay(results);
+                        
+                        parabolaAnalyzer.createChart(this.canvas);
                         parabolaAnalyzer.toggleQuadraticFit(true);
-                    }
-                    if (isTangentShowing && tangentAnalyzer && dataPoints.length >= 3) {
-                        tangentAnalyzer.setupControls(dataPoints);
+                        
+                        if (this.fitBtn) {
+                            this.fitBtn.textContent = 'Hide Quadratic Fit';
+                            this.fitBtn.classList.add('show');
+                        }
+                        if (this.tangentBtn) this.tangentBtn.style.display = 'inline-block';
+                        
+                        if (isTangentShowing && tangentAnalyzer) {
+                            tangentAnalyzer.setupControls(dataPoints);
+                        }
+                    } else {
+                        // Not enough points for regression, just plot points
+                        parabolaAnalyzer.coefficients = null;
+                        parabolaAnalyzer.createChart(this.canvas);
                     }
                 } else {
                     if (this.canvas) { parabolaAnalyzer.createEmptyChart(this.canvas); }
                 }
             });
         }
+
 
 
 

@@ -446,8 +446,6 @@ td input { width: 100%; border: none; background: transparent; padding: 6px 2px;
 td input:focus { background: #e3f2fd; outline: 2px solid #0f7e9b; }
 th, td { text-align: center; }
 
-#fitBtn { display: none; }
-#fitBtn.show { display: inline-block; }
 
 #tangentControls { display: none; }
 #tangentControls.visible { display: block !important; }
