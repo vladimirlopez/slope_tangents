@@ -32,12 +32,43 @@ class QuadraticRegressionApp {
         tangentAnalyzer = new TangentAnalyzer(parabolaAnalyzer);
         
         // Get DOM elements
-        this.plotBtn = DOMUtils.getElementById('plotBtn');
+        
         this.fitBtn = DOMUtils.getElementById('fitBtn');
+        this.tangentBtn = DOMUtils.getElementById('tangentBtn');
         this.addRowBtn = DOMUtils.getElementById('addRowBtn');
         this.canvas = DOMUtils.getElementById('chart');
         
         
+        
+        
+        const tableBody = document.getElementById('dataTableBody');
+        if (tableBody) {
+            tableBody.addEventListener('dataChanged', () => {
+                const dataPoints = dataTable.getDataPoints().filter(p => !isNaN(p.x) && !isNaN(p.y));
+                
+                // Track current state
+                const isFitShowing = parabolaAnalyzer && parabolaAnalyzer.chart && 
+                    parabolaAnalyzer.chart.data.datasets.some(d => d.label === 'Quadratic Fit');
+                const isTangentShowing = this.tangentBtn && this.tangentBtn.textContent === 'Hide Tangent Line';
+                
+                if (dataPoints.length > 0) {
+                    parabolaAnalyzer.setData(dataPoints);
+                    parabolaAnalyzer.createChart(this.canvas);
+                    
+                    if (isFitShowing && dataPoints.length >= 3) {
+                        parabolaAnalyzer.performQuadraticRegression(dataPoints);
+                        parabolaAnalyzer.toggleQuadraticFit(true);
+                    }
+                    if (isTangentShowing && tangentAnalyzer && dataPoints.length >= 3) {
+                        tangentAnalyzer.setupControls(dataPoints);
+                    }
+                } else {
+                    if (this.canvas) { parabolaAnalyzer.createEmptyChart(this.canvas); }
+                }
+            });
+        }
+
+
         // Setup axis label updates
         const xLabel = document.getElementById('xLabelInput');
         const yLabel = document.getElementById('yLabelInput');
@@ -51,6 +82,25 @@ class QuadraticRegressionApp {
         };
         if (xLabel) xLabel.addEventListener('input', updateLabels);
         if (yLabel) yLabel.addEventListener('input', updateLabels);
+
+        
+        if (this.tangentBtn) {
+            this.tangentBtn.addEventListener('click', () => {
+                const tangentControls = document.getElementById('tangentControls');
+                if (tangentControls.classList.contains('visible')) {
+                    tangentControls.classList.remove('visible');
+                    this.tangentBtn.textContent = 'Show Tangent Line';
+                    if (tangentAnalyzer) tangentAnalyzer.removeTangentFromChart();
+                } else {
+                    tangentControls.classList.add('visible');
+                    this.tangentBtn.textContent = 'Hide Tangent Line';
+                    if (tangentAnalyzer) {
+                        const dataPoints = dataTable.getDataPoints().filter(p => !isNaN(p.x) && !isNaN(p.y));
+                        tangentAnalyzer.setupControls(dataPoints);
+                    }
+                }
+            });
+        }
 
         // Setup event listeners
         this.setupEventListeners();
@@ -67,14 +117,24 @@ class QuadraticRegressionApp {
      */
     setupEventListeners() {
         // Plot button event listener
-        if (this.plotBtn) {
-            this.plotBtn.addEventListener('click', () => this.performAnalysis());
-        }
+        
 
         // Fit button event listener
+        
         if (this.fitBtn) {
-            this.fitBtn.addEventListener('click', () => this.toggleQuadraticFit());
+            this.fitBtn.addEventListener('click', () => {
+                if (this.fitBtn.textContent === 'Show Quadratic Fit') {
+                    this.performAnalysis();
+                    this.fitBtn.textContent = 'Hide Quadratic Fit';
+                } else {
+                    if (parabolaAnalyzer) parabolaAnalyzer.toggleQuadraticFit(false);
+                    this.fitBtn.textContent = 'Show Quadratic Fit';
+                    const analysisResults = DOMUtils.getElementById('analysisResults');
+                    if (analysisResults) analysisResults.classList.remove('show');
+                }
+            });
         }
+
 
         // Add row button event listener
         if (this.addRowBtn) {
@@ -148,14 +208,14 @@ class QuadraticRegressionApp {
             // Create/update chart
             if (this.canvas) {
                 parabolaAnalyzer.createChart(this.canvas);
+                parabolaAnalyzer.toggleQuadraticFit(true);
                 
                 // Show the fit button after successful plot
                 if (this.fitBtn) {
                     this.fitBtn.classList.add('show');
                 }
-                if (tangentAnalyzer) {
-                    tangentAnalyzer.setupControls(dataPoints);
-                }
+                // tangent button shows up instead
+                if (this.tangentBtn) this.tangentBtn.style.display = 'inline-block';
             }
             
             // Show success message

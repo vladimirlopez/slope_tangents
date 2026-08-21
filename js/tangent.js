@@ -67,6 +67,18 @@ class TangentAnalyzer {
     /**
      * Update tangent line analysis for current x value
      */
+    
+    removeTangentFromChart() {
+        if (this.parabolaAnalyzer && this.parabolaAnalyzer.chart) {
+            const chart = this.parabolaAnalyzer.chart;
+            chart.data.datasets = chart.data.datasets.filter(ds => 
+                ds.label !== 'Tangent Line' && ds.label !== 'Selected Point'
+            );
+            chart.update('none');
+        }
+    }
+
+
     updateTangentAnalysis() {
         if (!this.parabolaAnalyzer || !this.parabolaAnalyzer.coefficients) {
             return;
