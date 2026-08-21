@@ -23,6 +23,7 @@ class DataTable {
         }
     }
 
+    
     /**
      * Handle paste events for importing data from Excel/Google Docs
      */
@@ -78,17 +79,9 @@ class DataTable {
         
         // Dispatch input event to trigger auto-plot
         if (this.tableBody) {
-            // Dispatch specifically on an input so the app.js listener catches it
             const firstInput = this.tableBody.querySelector('input');
             if (firstInput) {
                 firstInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-        }
-    });
-            if (targetElement && targetElement.tagName === 'INPUT') {
-                targetElement.dispatchEvent(inputEvent);
-            } else {
-                this.tableBody.dispatchEvent(inputEvent);
             }
         }
     }
