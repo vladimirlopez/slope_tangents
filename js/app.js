@@ -41,9 +41,21 @@ class QuadraticRegressionApp {
         
         
         
+        
         const tableBody = document.getElementById('dataTableBody');
         if (tableBody) {
-            tableBody.addEventListener('dataChanged', () => {
+            tableBody.addEventListener('input', (e) => {
+                if (e.target.tagName !== 'INPUT') return;
+                
+                // Add row if typing in last row
+                const row = e.target.closest('tr');
+                if (row && dataTable && row === tableBody.lastElementChild) {
+                    const inputs = row.querySelectorAll('input');
+                    if (inputs[0] && inputs[1] && (inputs[0].value.trim() !== '' || inputs[1].value.trim() !== '')) {
+                        dataTable.addRow();
+                    }
+                }
+
                 const dataPoints = dataTable.getDataPoints().filter(p => !isNaN(p.x) && !isNaN(p.y));
                 
                 // Track current state
@@ -52,7 +64,7 @@ class QuadraticRegressionApp {
                 const isTangentShowing = this.tangentBtn && this.tangentBtn.textContent === 'Hide Tangent Line';
                 
                 if (dataPoints.length > 0) {
-                    parabolaAnalyzer.setData(dataPoints);
+                    parabolaAnalyzer.dataPoints = dataPoints;
                     parabolaAnalyzer.createChart(this.canvas);
                     
                     if (isFitShowing && dataPoints.length >= 3) {
@@ -67,6 +79,7 @@ class QuadraticRegressionApp {
                 }
             });
         }
+
 
 
         // Setup axis label updates

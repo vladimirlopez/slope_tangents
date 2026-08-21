@@ -14,7 +14,7 @@ class ParabolaAnalyzer {
     }
 
     constructor() {
-        this.coefficients = { a: 0, b: 0, c: 0 };
+        this.coefficients = null;
         this.rSquared = 0;
         this.dataPoints = [];
         this.chart = null;
@@ -286,13 +286,14 @@ class ParabolaAnalyzer {
         // Calculate plot range
         const xValues = this.dataPoints.map(p => p.x);
         const xRange = MathUtils.findRange(xValues);
-        const padding = (xRange.max - xRange.min) * 0.2;
+        const padding = (xRange.max - xRange.min) * 0.2 || 2;
         const xMin = xRange.min - padding;
         const xMax = xRange.max + padding;
 
         // Generate curve points
         const curvePoints = this.generateCurvePoints(xMin, xMax);
 
+        
         // Calculate y bounds from data and curve
         let yMin = Infinity;
         let yMax = -Infinity;
@@ -300,13 +301,19 @@ class ParabolaAnalyzer {
             if (p.y < yMin) yMin = p.y;
             if (p.y > yMax) yMax = p.y;
         });
-        curvePoints.forEach(p => {
-            if (p.y < yMin) yMin = p.y;
-            if (p.y > yMax) yMax = p.y;
-        });
+        
+        if (this.coefficients) {
+            curvePoints.forEach(p => {
+                if (p.y < yMin) yMin = p.y;
+                if (p.y > yMax) yMax = p.y;
+            });
+        }
+        
+        if (yMin === Infinity) { yMin = -10; yMax = 10; }
         const yPadding = (yMax - yMin) * 0.15 || 2;
         const finalYMin = yMin - yPadding;
         const finalYMax = yMax + yPadding;
+
 
 
         // Create chart datasets (only data points initially)
@@ -631,7 +638,7 @@ class ParabolaAnalyzer {
             // Calculate plot range
             const xValues = this.dataPoints.map(p => p.x);
             const xRange = MathUtils.findRange(xValues);
-            const padding = (xRange.max - xRange.min) * 0.2;
+            const padding = (xRange.max - xRange.min) * 0.2 || 2;
             const xMin = xRange.min - padding;
             const xMax = xRange.max + padding;
 
