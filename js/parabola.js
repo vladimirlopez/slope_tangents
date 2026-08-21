@@ -237,6 +237,7 @@ class ParabolaAnalyzer {
      * @param {HTMLCanvasElement} canvas - Canvas element for the chart
      */
     
+    
     createEmptyChart(canvas) {
         if (!canvas) return;
         if (this.chart) this.chart.destroy();
@@ -291,6 +292,22 @@ class ParabolaAnalyzer {
 
         // Generate curve points
         const curvePoints = this.generateCurvePoints(xMin, xMax);
+
+        // Calculate y bounds from data and curve
+        let yMin = Infinity;
+        let yMax = -Infinity;
+        this.dataPoints.forEach(p => {
+            if (p.y < yMin) yMin = p.y;
+            if (p.y > yMax) yMax = p.y;
+        });
+        curvePoints.forEach(p => {
+            if (p.y < yMin) yMin = p.y;
+            if (p.y > yMax) yMax = p.y;
+        });
+        const yPadding = (yMax - yMin) * 0.15 || 2;
+        const finalYMin = yMin - yPadding;
+        const finalYMax = yMax + yPadding;
+
 
         // Create chart datasets (only data points initially)
         const datasets = [
@@ -353,6 +370,8 @@ class ParabolaAnalyzer {
                     x: {
                         type: 'linear',
                         position: 'bottom',
+                        min: xMin,
+                        max: xMax,
                         title: {
                             display: true,
                             text: this.getAxisLabels().x,
@@ -367,6 +386,8 @@ class ParabolaAnalyzer {
                         }
                     },
                     y: {
+                        min: finalYMin,
+                        max: finalYMax,
                         title: {
                             display: true,
                             text: this.getAxisLabels().y,
