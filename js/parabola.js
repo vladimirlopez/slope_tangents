@@ -349,10 +349,16 @@ class ParabolaAnalyzer {
                     // Get click position relative to chart
                     const canvasPosition = Chart.helpers.getRelativePosition(event, this.chart);
                     const dataX = this.chart.scales.x.getValueForPixel(canvasPosition.x);
-                    const dataY = this.chart.scales.y.getValueForPixel(canvasPosition.y);
                     
-                    // Update the point analysis
-                    this.updatePointAnalysis(dataX);
+                    const tangentControls = document.getElementById('tangentControls');
+                    const isTangentExplorerVisible = tangentControls && tangentControls.classList.contains('visible');
+                    
+                    if (typeof tangentAnalyzer !== 'undefined' && tangentAnalyzer && isTangentExplorerVisible) {
+                        tangentAnalyzer.animateToX(dataX, 150);
+                    } else {
+                        // Update the point analysis directly
+                        this.updatePointAnalysis(dataX);
+                    }
                 },
                 plugins: {
                     title: {
