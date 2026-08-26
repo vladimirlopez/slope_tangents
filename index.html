@@ -6,7 +6,7 @@
     <title>Quadratic Regression & Tangent Lines | The Thinking Experiment</title>
     <link rel="icon" type="image/png" sizes="32x32" href="https://vladimirlopez.github.io/the-thinking-experiment/assets/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="https://vladimirlopez.github.io/the-thinking-experiment/assets/favicon-16.png" />
-    <link rel="stylesheet" href="css/styles.css?v=13">
+    <link rel="stylesheet" href="css/styles.css?v=15">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.min.js"></script>
 </head>
@@ -51,7 +51,7 @@
                 <div class="preset-box tangent-controls" id="tangentControls" style="display: none;">
                     <h3>Tangent Line Explorer</h3>
                     <label class="range-label">
-                        Move X: <span id="xValue">0</span>
+                        Move t: <span id="xValue">0</span>
                         <input type="range" id="xSlider" min="0" max="10" step="0.1" value="0">
                     </label>
                     <div class="metrics-grid" style="margin-top: 10px;">
@@ -89,11 +89,11 @@
                 <div class="metrics-grid">
                     <div>
                         <dt>Quadratic Equation</dt>
-                        <dd id="quadraticEquation">y = ax² + bx + c</dd>
+                        <dd id="quadraticEquation">y = At² + Bt + C</dd>
                     </div>
                     <div>
                         <dt>Coefficients</dt>
-                        <dd>a = <span id="coeffA">0</span>, b = <span id="coeffB">0</span>, c = <span id="coeffC">0</span></dd>
+                        <dd>A = <span id="coeffA">0</span>, B = <span id="coeffB">0</span>, C = <span id="coeffC">0</span></dd>
                     </div>
                     <div>
                         <dt>R²</dt>
@@ -109,10 +109,10 @@
     </div>
 
     <!-- JavaScript Modules -->
-    <script src="js/utilities.js?v=13"></script>
-    <script src="js/data-table.js?v=13"></script>
-    <script src="js/parabola.js?v=13"></script>
-    <script src="js/tangent.js?v=13"></script>
-    <script src="js/app.js?v=13"></script>
+    <script src="js/utilities.js?v=15"></script>
+    <script src="js/data-table.js?v=15"></script>
+    <script src="js/parabola.js?v=15"></script>
+    <script src="js/tangent.js?v=15"></script>
+    <script src="js/app.js?v=15"></script>
 </body>
 </html>

@@ -205,15 +205,15 @@ class ParabolaAnalyzer {
         
         let equation = 'y = ';
         
-        // Format coefficient a
+        // Format coefficient A
         if (Math.abs(a) !== 1) {
             equation += MathUtils.formatNumber(a, 3);
         } else {
             equation += a < 0 ? '-' : '';
         }
-        equation += 'x²';
+        equation += 't²';
         
-        // Format coefficient b
+        // Format coefficient B
         if (b !== 0) {
             if (b > 0) equation += ' + ';
             else equation += ' - ';
@@ -222,10 +222,10 @@ class ParabolaAnalyzer {
             if (absB !== 1) {
                 equation += MathUtils.formatNumber(absB, 3);
             }
-            equation += 'x';
+            equation += 't';
         }
         
-        // Format coefficient c
+        // Format coefficient C
         if (c !== 0) {
             if (c > 0) equation += ' + ';
             else equation += ' - ';
@@ -604,9 +604,9 @@ class ParabolaAnalyzer {
         
         // Format slope
         if (Math.abs(slope) === 1) {
-            equation += slope === 1 ? 'x' : '-x';
+            equation += slope === 1 ? 't' : '-t';
         } else {
-            equation += MathUtils.formatNumber(slope, 3) + 'x';
+            equation += MathUtils.formatNumber(slope, 3) + 't';
         }
         
         // Format y-intercept

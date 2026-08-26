@@ -172,11 +172,11 @@ class TangentAnalyzer {
         
         // Format slope
         if (Math.abs(slope) === 1) {
-            equation += slope < 0 ? '-x' : 'x';
+            equation += slope < 0 ? '-t' : 't';
         } else if (slope === 0) {
             equation += '0';
         } else {
-            equation += MathUtils.formatNumber(slope, 3) + 'x';
+            equation += MathUtils.formatNumber(slope, 3) + 't';
         }
         
         // Format intercept
