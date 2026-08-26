@@ -252,19 +252,19 @@ class ParabolaAnalyzer {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    title: { display: true, text: 'Quadratic Regression Analysis', font: { size: 14, weight: 'bold' } },
+                    title: { display: false, text: 'Quadratic Regression Analysis', font: { size: 14, weight: 'bold' } },
                     legend: { display: false }
                 },
                 scales: {
                     x: {
                         type: 'linear', position: 'bottom',
                         min: -10, max: 10,
-                        title: { display: true, text: this.getAxisLabels().x, font: { size: 14, weight: 'bold' } },
+                        title: { display: false, text: this.getAxisLabels().x, font: { size: 14, weight: 'bold' } },
                         grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
                     },
                     y: {
                         min: -10, max: 10,
-                        title: { display: true, text: this.getAxisLabels().y, font: { size: 14, weight: 'bold' } },
+                        title: { display: false, text: this.getAxisLabels().y, font: { size: 14, weight: 'bold' } },
                         grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
                     }
                 }
@@ -361,8 +361,7 @@ class ParabolaAnalyzer {
                     }
                 },
                 plugins: {
-                    title: {
-                        display: true,
+                    title: { display: false,
                         text: 'Quadratic Regression Analysis',
                         font: {
                             size: 14,
@@ -388,8 +387,7 @@ class ParabolaAnalyzer {
                         position: 'bottom',
                         min: xMin,
                         max: xMax,
-                        title: {
-                            display: true,
+                        title: { display: false,
                             text: this.getAxisLabels().x,
                             font: {
                                 size: 14,
@@ -404,8 +402,7 @@ class ParabolaAnalyzer {
                     y: {
                         min: finalYMin,
                         max: finalYMax,
-                        title: {
-                            display: true,
+                        title: { display: false,
                             text: this.getAxisLabels().y,
                             font: {
                                 size: 14,

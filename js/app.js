@@ -150,6 +150,16 @@ class QuadraticRegressionApp {
         if (!this.canvas) return;
         
         try {
+            // Temporarily enable native title for export
+            const titleInput = document.getElementById('graphTitleInput');
+            let originalDisplay = false;
+            if (typeof parabolaAnalyzer !== 'undefined' && parabolaAnalyzer.chart && titleInput) {
+                originalDisplay = parabolaAnalyzer.chart.options.plugins.title.display;
+                parabolaAnalyzer.chart.options.plugins.title.text = titleInput.value;
+                parabolaAnalyzer.chart.options.plugins.title.display = true;
+                parabolaAnalyzer.chart.update('none');
+            }
+
             // Create a temporary canvas to ensure white background
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = this.canvas.width;
@@ -163,10 +173,17 @@ class QuadraticRegressionApp {
             // Draw the chart over it
             ctx.drawImage(this.canvas, 0, 0);
             
+            // Restore native title display state
+            if (typeof parabolaAnalyzer !== 'undefined' && parabolaAnalyzer.chart && titleInput) {
+                parabolaAnalyzer.chart.options.plugins.title.display = originalDisplay;
+                parabolaAnalyzer.chart.update('none');
+            }
+            
             // Export
             const url = tempCanvas.toDataURL('image/png');
             const link = document.createElement('a');
-            link.download = 'quadratic_regression_graph.png';
+            let safeName = (titleInput && titleInput.value) ? titleInput.value.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'quadratic_regression_graph';
+            link.download = safeName + '.png';
             link.href = url;
             
             // Trigger download
