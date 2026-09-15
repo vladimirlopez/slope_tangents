@@ -5,13 +5,11 @@
 class ParabolaAnalyzer {
 
     getAxisLabels() {
-        const graphXEl = document.getElementById('graphXLabelInput');
         const xEl = document.getElementById('xLabelInput');
-        const graphYEl = document.getElementById('graphYLabelInput');
         const yEl = document.getElementById('yLabelInput');
 
-        const xVal = (graphXEl && graphXEl.value.trim()) || (xEl && xEl.value.trim()) || 'X Value';
-        const yVal = (graphYEl && graphYEl.value.trim()) || (yEl && yEl.value.trim()) || 'Y Value';
+        const xVal = (xEl && xEl.value.trim()) || 'X Value';
+        const yVal = (yEl && yEl.value.trim()) || 'Y Value';
 
         return {
             x: xVal,

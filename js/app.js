@@ -100,21 +100,14 @@ class QuadraticRegressionApp {
 
 
 
-        // Setup axis label updates and bidirectional synchronization
+        // Setup axis label updates and in-graph click-to-edit
         const xTableLabel = document.getElementById('xLabelInput');
         const yTableLabel = document.getElementById('yLabelInput');
-        const xGraphLabel = document.getElementById('graphXLabelInput');
-        const yGraphLabel = document.getElementById('graphYLabelInput');
+        const inlineInput = document.getElementById('chartInlineLabelInput');
+        let activeAxis = null;
+        let originalValBeforeEdit = '';
 
-        const updateLabels = (source) => {
-            if (source === 'table') {
-                if (xGraphLabel && xTableLabel) xGraphLabel.value = xTableLabel.value;
-                if (yGraphLabel && yTableLabel) yGraphLabel.value = yTableLabel.value;
-            } else if (source === 'graph') {
-                if (xTableLabel && xGraphLabel) xTableLabel.value = xGraphLabel.value;
-                if (yTableLabel && yGraphLabel) yTableLabel.value = yGraphLabel.value;
-            }
-
+        const updateLabels = () => {
             if (parabolaAnalyzer && parabolaAnalyzer.chart) {
                 const labels = parabolaAnalyzer.getAxisLabels();
                 if (parabolaAnalyzer.chart.options.scales.x) {
@@ -129,39 +122,110 @@ class QuadraticRegressionApp {
             }
         };
 
-        if (xTableLabel) xTableLabel.addEventListener('input', () => updateLabels('table'));
-        if (yTableLabel) yTableLabel.addEventListener('input', () => updateLabels('table'));
-        if (xGraphLabel) xGraphLabel.addEventListener('input', () => updateLabels('graph'));
-        if (yGraphLabel) yGraphLabel.addEventListener('input', () => updateLabels('graph'));
+        if (xTableLabel) xTableLabel.addEventListener('input', updateLabels);
+        if (yTableLabel) yTableLabel.addEventListener('input', updateLabels);
 
-        // Canvas click to focus axis inputs when user clicks near axis labels
+        // Helper to open inline editor directly on graph axis
+        const openInlineEditor = (axis) => {
+            if (!inlineInput || !parabolaAnalyzer || !parabolaAnalyzer.chart) return;
+            const chart = parabolaAnalyzer.chart;
+            activeAxis = axis;
+
+            if (axis === 'x') {
+                originalValBeforeEdit = xTableLabel ? xTableLabel.value : 'X Value';
+                inlineInput.value = originalValBeforeEdit;
+                inlineInput.placeholder = 'X-axis label (e.g. Time (s))';
+                inlineInput.style.left = `${(chart.scales.x.left + chart.scales.x.right) / 2}px`;
+                inlineInput.style.transform = 'translateX(-50%)';
+                inlineInput.style.top = 'auto';
+                inlineInput.style.bottom = '8px';
+            } else {
+                originalValBeforeEdit = yTableLabel ? yTableLabel.value : 'Y Value';
+                inlineInput.value = originalValBeforeEdit;
+                inlineInput.placeholder = 'Y-axis label (e.g. Position (m))';
+                inlineInput.style.left = '8px';
+                inlineInput.style.transform = 'translateY(-50%)';
+                inlineInput.style.top = `${(chart.scales.y.top + chart.scales.y.bottom) / 2}px`;
+                inlineInput.style.bottom = 'auto';
+            }
+
+            inlineInput.style.display = 'block';
+            inlineInput.focus();
+            inlineInput.select();
+        };
+
+        if (inlineInput) {
+            inlineInput.addEventListener('input', () => {
+                if (!activeAxis) return;
+                const val = inlineInput.value;
+                if (activeAxis === 'x' && xTableLabel) {
+                    xTableLabel.value = val;
+                } else if (activeAxis === 'y' && yTableLabel) {
+                    yTableLabel.value = val;
+                }
+                updateLabels();
+            });
+
+            inlineInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    inlineInput.blur();
+                } else if (e.key === 'Escape') {
+                    if (activeAxis === 'x' && xTableLabel) {
+                        xTableLabel.value = originalValBeforeEdit;
+                    } else if (activeAxis === 'y' && yTableLabel) {
+                        yTableLabel.value = originalValBeforeEdit;
+                    }
+                    updateLabels();
+                    inlineInput.style.display = 'none';
+                    activeAxis = null;
+                }
+            });
+
+            inlineInput.addEventListener('blur', () => {
+                inlineInput.style.display = 'none';
+                activeAxis = null;
+                updateLabels();
+            });
+        }
+
+        // Canvas hover and click detection for in-graph axis label editing
         if (this.canvas) {
+            this.canvas.addEventListener('mousemove', (e) => {
+                if (!parabolaAnalyzer || !parabolaAnalyzer.chart || !parabolaAnalyzer.chart.chartArea) return;
+                const chart = parabolaAnalyzer.chart;
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const isXAxis = (y >= chart.chartArea.bottom + 8 && x >= chart.scales.x.left && x <= chart.scales.x.right);
+                const isYAxis = (x <= chart.chartArea.left && y >= chart.scales.y.top && y <= chart.scales.y.bottom);
+
+                if (isXAxis) {
+                    this.canvas.style.cursor = 'pointer';
+                    this.canvas.title = 'Click to edit horizontal (X) axis label';
+                } else if (isYAxis) {
+                    this.canvas.style.cursor = 'pointer';
+                    this.canvas.title = 'Click to edit vertical (Y) axis label';
+                } else {
+                    this.canvas.style.cursor = 'crosshair';
+                    this.canvas.title = '';
+                }
+            });
+
             this.canvas.addEventListener('click', (e) => {
-                if (!parabolaAnalyzer || !parabolaAnalyzer.chart) return;
+                if (!parabolaAnalyzer || !parabolaAnalyzer.chart || !parabolaAnalyzer.chart.chartArea) return;
                 const chart = parabolaAnalyzer.chart;
                 const rect = this.canvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
 
                 // Check if clicked in bottom area (X axis)
-                if (chart.chartArea && y >= chart.chartArea.bottom) {
-                    if (xGraphLabel) {
-                        xGraphLabel.focus();
-                        xGraphLabel.select();
-                    } else if (xTableLabel) {
-                        xTableLabel.focus();
-                        xTableLabel.select();
-                    }
+                if (y >= chart.chartArea.bottom + 8 && x >= chart.scales.x.left && x <= chart.scales.x.right) {
+                    openInlineEditor('x');
                 }
                 // Check if clicked in left area (Y axis)
-                else if (chart.chartArea && x <= chart.chartArea.left) {
-                    if (yGraphLabel) {
-                        yGraphLabel.focus();
-                        yGraphLabel.select();
-                    } else if (yTableLabel) {
-                        yTableLabel.focus();
-                        yTableLabel.select();
-                    }
+                else if (x <= chart.chartArea.left && y >= chart.scales.y.top && y <= chart.scales.y.bottom) {
+                    openInlineEditor('y');
                 }
             });
         }
