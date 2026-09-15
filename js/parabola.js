@@ -5,11 +5,17 @@
 class ParabolaAnalyzer {
 
     getAxisLabels() {
+        const graphXEl = document.getElementById('graphXLabelInput');
         const xEl = document.getElementById('xLabelInput');
+        const graphYEl = document.getElementById('graphYLabelInput');
         const yEl = document.getElementById('yLabelInput');
+
+        const xVal = (graphXEl && graphXEl.value.trim()) || (xEl && xEl.value.trim()) || 'X Value';
+        const yVal = (graphYEl && graphYEl.value.trim()) || (yEl && yEl.value.trim()) || 'Y Value';
+
         return {
-            x: xEl ? xEl.value || 'X Value' : 'X Value',
-            y: yEl ? yEl.value || 'Y Value' : 'Y Value'
+            x: xVal,
+            y: yVal
         };
     }
 
@@ -259,12 +265,22 @@ class ParabolaAnalyzer {
                     x: {
                         type: 'linear', position: 'bottom',
                         min: -10, max: 10,
-                        title: { display: false, text: this.getAxisLabels().x, font: { size: 14, weight: 'bold' } },
+                        title: {
+                            display: true,
+                            text: this.getAxisLabels().x,
+                            font: { size: 14, weight: '600', family: "'IBM Plex Sans', 'Inter', sans-serif" },
+                            color: '#123140'
+                        },
                         grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
                     },
                     y: {
                         min: -10, max: 10,
-                        title: { display: false, text: this.getAxisLabels().y, font: { size: 14, weight: 'bold' } },
+                        title: {
+                            display: true,
+                            text: this.getAxisLabels().y,
+                            font: { size: 14, weight: '600', family: "'IBM Plex Sans', 'Inter', sans-serif" },
+                            color: '#123140'
+                        },
                         grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
                     }
                 }
@@ -387,12 +403,15 @@ class ParabolaAnalyzer {
                         position: 'bottom',
                         min: xMin,
                         max: xMax,
-                        title: { display: false,
+                        title: {
+                            display: true,
                             text: this.getAxisLabels().x,
                             font: {
                                 size: 14,
-                                weight: 'bold'
-                            }
+                                weight: '600',
+                                family: "'IBM Plex Sans', 'Inter', sans-serif"
+                            },
+                            color: '#123140'
                         },
                         grid: {
                             display: true,
@@ -402,12 +421,15 @@ class ParabolaAnalyzer {
                     y: {
                         min: finalYMin,
                         max: finalYMax,
-                        title: { display: false,
+                        title: {
+                            display: true,
                             text: this.getAxisLabels().y,
                             font: {
                                 size: 14,
-                                weight: 'bold'
-                            }
+                                weight: '600',
+                                family: "'IBM Plex Sans', 'Inter', sans-serif"
+                            },
+                            color: '#123140'
                         },
                         grid: {
                             display: true,

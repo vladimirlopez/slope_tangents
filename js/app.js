@@ -100,19 +100,71 @@ class QuadraticRegressionApp {
 
 
 
-        // Setup axis label updates
-        const xLabel = document.getElementById('xLabelInput');
-        const yLabel = document.getElementById('yLabelInput');
-        const updateLabels = () => {
+        // Setup axis label updates and bidirectional synchronization
+        const xTableLabel = document.getElementById('xLabelInput');
+        const yTableLabel = document.getElementById('yLabelInput');
+        const xGraphLabel = document.getElementById('graphXLabelInput');
+        const yGraphLabel = document.getElementById('graphYLabelInput');
+
+        const updateLabels = (source) => {
+            if (source === 'table') {
+                if (xGraphLabel && xTableLabel) xGraphLabel.value = xTableLabel.value;
+                if (yGraphLabel && yTableLabel) yGraphLabel.value = yTableLabel.value;
+            } else if (source === 'graph') {
+                if (xTableLabel && xGraphLabel) xTableLabel.value = xGraphLabel.value;
+                if (yTableLabel && yGraphLabel) yTableLabel.value = yGraphLabel.value;
+            }
+
             if (parabolaAnalyzer && parabolaAnalyzer.chart) {
                 const labels = parabolaAnalyzer.getAxisLabels();
-                parabolaAnalyzer.chart.options.scales.x.title.text = labels.x;
-                parabolaAnalyzer.chart.options.scales.y.title.text = labels.y;
+                if (parabolaAnalyzer.chart.options.scales.x) {
+                    parabolaAnalyzer.chart.options.scales.x.title.text = labels.x;
+                    parabolaAnalyzer.chart.options.scales.x.title.display = true;
+                }
+                if (parabolaAnalyzer.chart.options.scales.y) {
+                    parabolaAnalyzer.chart.options.scales.y.title.text = labels.y;
+                    parabolaAnalyzer.chart.options.scales.y.title.display = true;
+                }
                 parabolaAnalyzer.chart.update('none');
             }
         };
-        if (xLabel) xLabel.addEventListener('input', updateLabels);
-        if (yLabel) yLabel.addEventListener('input', updateLabels);
+
+        if (xTableLabel) xTableLabel.addEventListener('input', () => updateLabels('table'));
+        if (yTableLabel) yTableLabel.addEventListener('input', () => updateLabels('table'));
+        if (xGraphLabel) xGraphLabel.addEventListener('input', () => updateLabels('graph'));
+        if (yGraphLabel) yGraphLabel.addEventListener('input', () => updateLabels('graph'));
+
+        // Canvas click to focus axis inputs when user clicks near axis labels
+        if (this.canvas) {
+            this.canvas.addEventListener('click', (e) => {
+                if (!parabolaAnalyzer || !parabolaAnalyzer.chart) return;
+                const chart = parabolaAnalyzer.chart;
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Check if clicked in bottom area (X axis)
+                if (chart.chartArea && y >= chart.chartArea.bottom) {
+                    if (xGraphLabel) {
+                        xGraphLabel.focus();
+                        xGraphLabel.select();
+                    } else if (xTableLabel) {
+                        xTableLabel.focus();
+                        xTableLabel.select();
+                    }
+                }
+                // Check if clicked in left area (Y axis)
+                else if (chart.chartArea && x <= chart.chartArea.left) {
+                    if (yGraphLabel) {
+                        yGraphLabel.focus();
+                        yGraphLabel.select();
+                    } else if (yTableLabel) {
+                        yTableLabel.focus();
+                        yTableLabel.select();
+                    }
+                }
+            });
+        }
 
         
         if (this.tangentBtn) {
@@ -150,14 +202,26 @@ class QuadraticRegressionApp {
         if (!this.canvas) return;
         
         try {
-            // Temporarily enable native title for export
+            // Temporarily enable native title and ensure axis labels are set for export
             const titleInput = document.getElementById('graphTitleInput');
-            let originalDisplay = false;
-            if (typeof parabolaAnalyzer !== 'undefined' && parabolaAnalyzer.chart && titleInput) {
-                originalDisplay = parabolaAnalyzer.chart.options.plugins.title.display;
-                parabolaAnalyzer.chart.options.plugins.title.text = titleInput.value;
-                parabolaAnalyzer.chart.options.plugins.title.display = true;
-                parabolaAnalyzer.chart.update('none');
+            let originalTitleDisplay = false;
+            if (typeof parabolaAnalyzer !== 'undefined' && parabolaAnalyzer.chart) {
+                const chart = parabolaAnalyzer.chart;
+                if (titleInput) {
+                    originalTitleDisplay = chart.options.plugins.title.display;
+                    chart.options.plugins.title.text = titleInput.value;
+                    chart.options.plugins.title.display = true;
+                }
+                const labels = parabolaAnalyzer.getAxisLabels();
+                if (chart.options.scales.x) {
+                    chart.options.scales.x.title.text = labels.x;
+                    chart.options.scales.x.title.display = true;
+                }
+                if (chart.options.scales.y) {
+                    chart.options.scales.y.title.text = labels.y;
+                    chart.options.scales.y.title.display = true;
+                }
+                chart.update('none');
             }
 
             // Create a temporary canvas to ensure white background
@@ -175,7 +239,7 @@ class QuadraticRegressionApp {
             
             // Restore native title display state
             if (typeof parabolaAnalyzer !== 'undefined' && parabolaAnalyzer.chart && titleInput) {
-                parabolaAnalyzer.chart.options.plugins.title.display = originalDisplay;
+                parabolaAnalyzer.chart.options.plugins.title.display = originalTitleDisplay;
                 parabolaAnalyzer.chart.update('none');
             }
             

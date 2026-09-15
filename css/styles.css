@@ -465,5 +465,114 @@ th, td { text-align: center; }
 #graphInfoBox { display: none; }
 #graphInfoBox.show { display: block !important; }
 
-.header-input { width: 100%; border: none; background: transparent; padding: 2px; font-size: inherit; font-weight: inherit; font-family: inherit; text-align: center; color: inherit; border-radius: 4px; outline: none; }
-.header-input:focus { background: #fff; outline: 2px solid #0f7e9b; }
+.header-input {
+  width: 100%;
+  border: 1px dashed transparent;
+  background: transparent;
+  padding: 4px 6px;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  text-align: center;
+  color: inherit;
+  border-radius: 6px;
+  outline: none;
+  transition: background 0.2s, border-color 0.2s;
+  cursor: text;
+}
+th:hover .header-input,
+.header-input:hover {
+  border-color: #a9c4cf;
+  background: rgba(255, 255, 255, 0.7);
+}
+.header-input:focus {
+  background: #fff;
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+}
+
+.graph-title-input {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0.5rem auto;
+  max-width: 90%;
+}
+
+.graph-axis-toolbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  padding: 0.45rem 0.8rem;
+  background: #f4f9fc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.axis-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.2rem 0.35rem 0.2rem 0.55rem;
+  box-shadow: 0 1px 3px rgba(12, 54, 68, 0.05);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.axis-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(15, 126, 155, 0.2);
+}
+
+.axis-tag {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-strong);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.axis-input {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 0.25rem 0.35rem;
+  min-width: 110px;
+  max-width: 170px;
+  outline: none;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.axis-input:focus {
+  background: #eef8fb;
+  color: var(--ink);
+}
+
+@media (max-width: 680px) {
+  .graph-axis-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .axis-field {
+    justify-content: space-between;
+  }
+  .axis-input {
+    max-width: none;
+    flex: 1;
+    text-align: right;
+  }
+}
+

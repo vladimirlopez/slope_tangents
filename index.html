@@ -9,7 +9,7 @@
     <title>Quadratic Regression & Tangent Lines | The Thinking Experiment</title>
     <link rel="icon" type="image/png" sizes="32x32" href="https://vladimirlopez.github.io/the-thinking-experiment/assets/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="https://vladimirlopez.github.io/the-thinking-experiment/assets/favicon-16.png" />
-    <link rel="stylesheet" href="css/styles.css?v=18">
+    <link rel="stylesheet" href="css/styles.css?v=19">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.min.js"></script>
 </head>
@@ -34,8 +34,8 @@
                     <table id="dataTable">
                         <thead>
                             <tr>
-                                <th><input type="text" id="xLabelInput" value="X Value" class="header-input"></th>
-                                <th><input type="text" id="yLabelInput" value="Y Value" class="header-input"></th>
+                                <th><input type="text" id="xLabelInput" value="X Value" class="header-input" title="Click to edit horizontal (X) axis label" placeholder="X-axis label"></th>
+                                <th><input type="text" id="yLabelInput" value="Y Value" class="header-input" title="Click to edit vertical (Y) axis label" placeholder="Y-axis label"></th>
                             </tr>
                         </thead>
                         <tbody id="dataTableBody">
@@ -72,7 +72,17 @@
 
             <section class="panel wide visualization">
                 <h2>Graph</h2>
-                <input type="text" id="graphTitleInput" class="header-input" style="width: 100%; text-align: center; font-size: 14px; font-weight: bold; margin-bottom: 10px; margin-top: 10px; z-index: 10; position: relative; color: #666;" value="Quadratic Regression Analysis">
+                <input type="text" id="graphTitleInput" class="header-input graph-title-input" value="Quadratic Regression Analysis" title="Click to edit graph title">
+                <div class="graph-axis-toolbar" aria-label="Axis label controls">
+                    <div class="axis-field">
+                        <label for="graphXLabelInput" class="axis-tag">X Axis</label>
+                        <input type="text" id="graphXLabelInput" class="axis-input" value="X Value" placeholder="e.g. Time (s)" title="Click to edit X-axis label">
+                    </div>
+                    <div class="axis-field">
+                        <label for="graphYLabelInput" class="axis-tag">Y Axis</label>
+                        <input type="text" id="graphYLabelInput" class="axis-input" value="Y Value" placeholder="e.g. Position (m)" title="Click to edit Y-axis label">
+                    </div>
+                </div>
                 <div class="chart-container" style="position: relative; height: 500px; width: 100%;">
                     <canvas id="chart"></canvas>
                     <div class="graph-info-box" id="graphInfoBox" style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.95); border: 1px solid #ccc; border-radius: 5px; padding: 8px; font-size: 12px; min-width: 150px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000;">
@@ -113,10 +123,10 @@
     </div>
 
     <!-- JavaScript Modules -->
-    <script src="js/utilities.js?v=18"></script>
-    <script src="js/data-table.js?v=18"></script>
-    <script src="js/parabola.js?v=18"></script>
-    <script src="js/tangent.js?v=18"></script>
-    <script src="js/app.js?v=18"></script>
+    <script src="js/utilities.js?v=19"></script>
+    <script src="js/data-table.js?v=19"></script>
+    <script src="js/parabola.js?v=19"></script>
+    <script src="js/tangent.js?v=19"></script>
+    <script src="js/app.js?v=19"></script>
 </body>
 </html>
