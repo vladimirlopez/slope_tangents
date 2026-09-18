@@ -22,6 +22,12 @@ class ParabolaAnalyzer {
         this.rSquared = 0;
         this.dataPoints = [];
         this.chart = null;
+        this.tangentData = null; // { x, y, slope, equation, visible }
+        this.showQuadraticFit = true;
+        this.cardPosition = null; // { x, y } when dragged
+        this.lastBoxBounds = null; // { x, y, width, height }
+        this.isDraggingCard = false;
+        this.dragOffset = { x: 0, y: 0 };
     }
 
     /**
@@ -240,14 +246,290 @@ class ParabolaAnalyzer {
     }
 
     /**
+     * Check if a canvas pixel coordinate is inside the overlay card
+     * @param {number} x - Pixel X coordinate
+     * @param {number} y - Pixel Y coordinate
+     * @returns {boolean}
+     */
+    isPointInsideCard(x, y) {
+        if (!this.lastBoxBounds || !this.coefficients || !this.showQuadraticFit) return false;
+        const b = this.lastBoxBounds;
+        return x >= b.x && x <= (b.x + b.width) && y >= b.y && y <= (b.y + b.height);
+    }
+
+    /**
+     * Setup drag-and-drop interaction for the on-canvas overlay card
+     * @param {HTMLCanvasElement} canvas
+     */
+    setupCanvasInteraction(canvas) {
+        if (!canvas || canvas._cardInteractionAttached) return;
+        canvas._cardInteractionAttached = true;
+
+        let isMouseDownOnCard = false;
+        let startMousePos = { x: 0, y: 0 };
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (!this.lastBoxBounds || !this.coefficients || !this.showQuadraticFit) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            if (this.isPointInsideCard(mouseX, mouseY)) {
+                isMouseDownOnCard = true;
+                startMousePos = { x: mouseX, y: mouseY };
+                this.dragOffset = {
+                    x: mouseX - this.lastBoxBounds.x,
+                    y: mouseY - this.lastBoxBounds.y
+                };
+                canvas.style.cursor = 'grabbing';
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!this.lastBoxBounds || !this.coefficients || !this.showQuadraticFit) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            if (isMouseDownOnCard) {
+                this.cardPosition = {
+                    x: mouseX - this.dragOffset.x,
+                    y: mouseY - this.dragOffset.y
+                };
+                if (this.chart) this.chart.update('none');
+                return;
+            }
+
+            if (mouseX >= 0 && mouseX <= rect.width && mouseY >= 0 && mouseY <= rect.height) {
+                if (this.isPointInsideCard(mouseX, mouseY)) {
+                    canvas.style.cursor = 'grab';
+                }
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isMouseDownOnCard) {
+                isMouseDownOnCard = false;
+                if (canvas) canvas.style.cursor = 'default';
+            }
+        });
+    }
+
+    /**
+     * Render the on-canvas information card with Quadratic Fit and Tangent Slope values
+     * @param {Chart} chart
+     */
+    drawOverlayCard(chart) {
+        if (!this.coefficients || !this.showQuadraticFit) return;
+
+        const ctx = chart.ctx;
+        const chartArea = chart.chartArea;
+        if (!chartArea) return;
+
+        const { a, b, c } = this.coefficients;
+        const r2 = this.rSquared;
+        const hasTangent = !!(this.tangentData && this.tangentData.visible);
+
+        const fontFamily = "'Inter', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        const titleFont = `700 11px ${fontFamily}`;
+        const eqFont = `700 13px ${fontFamily}`;
+        const subFont = `500 11px ${fontFamily}`;
+        const slopeFont = `700 13px ${fontFamily}`;
+
+        const eqStr = this.getEquationString();
+        const coeffStr = `A = ${MathUtils.formatNumber(a, 3)}   B = ${MathUtils.formatNumber(b, 3)}   C = ${MathUtils.formatNumber(c, 3)}`;
+        const r2Str = `R² = ${MathUtils.formatNumber(r2, 4)}`;
+
+        let tangentXStr = '';
+        let tangentPtStr = '';
+        let tangentEqStr = '';
+        let slopeStr = '';
+
+        if (hasTangent) {
+            const tx = this.tangentData.x;
+            const ty = this.tangentData.y;
+            const tslope = this.tangentData.slope;
+            tangentXStr = `at t = ${MathUtils.formatNumber(tx, 3)}`;
+            tangentPtStr = `Point: (${MathUtils.formatNumber(tx, 3)}, ${MathUtils.formatNumber(ty, 3)})`;
+            tangentEqStr = this.tangentData.equation || this.getTangentEquation(tx, ty, tslope);
+            slopeStr = `Slope (m) = ${MathUtils.formatNumber(tslope, 3)}`;
+        }
+
+        // Measure text widths to determine card width
+        ctx.save();
+        ctx.font = eqFont;
+        const eqWidth = ctx.measureText(eqStr).width;
+        ctx.font = subFont;
+        const coeffWidth = ctx.measureText(coeffStr).width;
+        let maxTextWidth = Math.max(eqWidth, coeffWidth, 230);
+
+        if (hasTangent) {
+            ctx.font = slopeFont;
+            const slopeWidth = ctx.measureText(slopeStr).width + 60;
+            ctx.font = subFont;
+            const ptWidth = ctx.measureText(`${tangentPtStr}   |   ${tangentEqStr}`).width;
+            maxTextWidth = Math.max(maxTextWidth, slopeWidth, ptWidth);
+        }
+
+        const paddingX = 14;
+        const paddingY = 12;
+        const boxWidth = Math.min(Math.max(280, maxTextWidth + paddingX * 2), chartArea.width - 24);
+        const boxHeight = hasTangent ? 172 : 84;
+
+        // Position: use user dragged position or default to top-right
+        let boxX, boxY;
+        if (this.cardPosition) {
+            boxX = Math.max(chartArea.left + 6, Math.min(this.cardPosition.x, chartArea.right - boxWidth - 6));
+            boxY = Math.max(chartArea.top + 6, Math.min(this.cardPosition.y, chartArea.bottom - boxHeight - 6));
+        } else {
+            boxX = chartArea.right - boxWidth - 14;
+            boxY = chartArea.top + 14;
+        }
+
+        this.lastBoxBounds = { x: boxX, y: boxY, width: boxWidth, height: boxHeight };
+
+        // Helper for rounded rect
+        const drawRoundRectPath = (x, y, w, h, r) => {
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(x, y, w, h, r);
+            } else {
+                ctx.moveTo(x + r, y);
+                ctx.lineTo(x + w - r, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                ctx.lineTo(x + r, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                ctx.lineTo(x, y + r);
+                ctx.quadraticCurveTo(x, y, x + r, y);
+                ctx.closePath();
+            }
+        };
+
+        // Draw shadow & background
+        ctx.save();
+        ctx.shadowColor = 'rgba(12, 54, 68, 0.12)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 4;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+        drawRoundRectPath(boxX, boxY, boxWidth, boxHeight, 8);
+        ctx.fill();
+        ctx.restore();
+
+        // Draw subtle border
+        ctx.save();
+        ctx.strokeStyle = '#c8dbe3';
+        ctx.lineWidth = 1;
+        drawRoundRectPath(boxX, boxY, boxWidth, boxHeight, 8);
+        ctx.stroke();
+
+        // SECTION 1: Quadratic Fit
+        let curY = boxY + paddingY;
+
+        // Teal indicator dot
+        ctx.fillStyle = '#0f7e9b';
+        ctx.beginPath();
+        ctx.arc(boxX + paddingX + 4, curY + 6, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Header: "QUADRATIC FIT"
+        ctx.font = titleFont;
+        ctx.fillStyle = '#0f7e9b';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('QUADRATIC FIT', boxX + paddingX + 14, curY + 6);
+
+        // R² value on the right
+        ctx.font = subFont;
+        ctx.fillStyle = '#123140';
+        ctx.textAlign = 'right';
+        ctx.fillText(r2Str, boxX + boxWidth - paddingX, curY + 6);
+
+        // Equation
+        curY += 21;
+        ctx.font = eqFont;
+        ctx.fillStyle = '#123140';
+        ctx.textAlign = 'left';
+        ctx.fillText(eqStr, boxX + paddingX, curY + 6);
+
+        // Coefficients
+        curY += 19;
+        ctx.font = subFont;
+        ctx.fillStyle = '#4b6570';
+        ctx.fillText(coeffStr, boxX + paddingX, curY + 6);
+
+        // SECTION 2: Tangent Line & Slope
+        if (hasTangent) {
+            // Divider line
+            curY += 19;
+            ctx.strokeStyle = '#e2edf1';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(boxX + paddingX, curY);
+            ctx.lineTo(boxX + boxWidth - paddingX, curY);
+            ctx.stroke();
+
+            // Tangent Header
+            curY += 10;
+            // Amber indicator dot
+            ctx.fillStyle = '#d67b19';
+            ctx.beginPath();
+            ctx.arc(boxX + paddingX + 4, curY + 6, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Header: "TANGENT LINE"
+            ctx.font = titleFont;
+            ctx.fillStyle = '#d67b19';
+            ctx.textAlign = 'left';
+            ctx.fillText('TANGENT LINE', boxX + paddingX + 14, curY + 6);
+
+            // at t = ... on right
+            ctx.font = subFont;
+            ctx.fillStyle = '#4b6570';
+            ctx.textAlign = 'right';
+            ctx.fillText(tangentXStr, boxX + boxWidth - paddingX, curY + 6);
+
+            // Point and Tangent Equation
+            curY += 19;
+            ctx.font = subFont;
+            ctx.fillStyle = '#4b6570';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${tangentPtStr}   |   ${tangentEqStr}`, boxX + paddingX, curY + 6);
+
+            // Slope badge / prominent display
+            curY += 21;
+            const badgeW = boxWidth - paddingX * 2;
+            const badgeH = 26;
+            ctx.fillStyle = 'rgba(214, 123, 25, 0.08)';
+            drawRoundRectPath(boxX + paddingX, curY, badgeW, badgeH, 5);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(214, 123, 25, 0.35)';
+            ctx.stroke();
+
+            // Slope text inside badge
+            ctx.font = slopeFont;
+            ctx.fillStyle = '#d67b19';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(slopeStr, boxX + boxWidth / 2, curY + badgeH / 2);
+        }
+
+        ctx.restore();
+    }
+
+    /**
      * Create or update the chart visualization
      * @param {HTMLCanvasElement} canvas - Canvas element for the chart
      */
-    
-    
     createEmptyChart(canvas) {
         if (!canvas) return;
         if (this.chart) this.chart.destroy();
+        this.coefficients = null;
+        this.tangentData = null;
+        this.cardPosition = null;
+        this.lastBoxBounds = null;
         
         const config = {
             type: 'scatter',
@@ -360,8 +642,11 @@ class ParabolaAnalyzer {
                     mode: 'point'
                 },
                 onClick: (event, elements) => {
-                    // Get click position relative to chart
+                    // Ignore clicks on overlay card
                     const canvasPosition = Chart.helpers.getRelativePosition(event, this.chart);
+                    if (this.isPointInsideCard(canvasPosition.x, canvasPosition.y)) {
+                        return;
+                    }
                     const dataX = this.chart.scales.x.getValueForPixel(canvasPosition.x);
                     
                     const tangentControls = document.getElementById('tangentControls');
@@ -435,12 +720,23 @@ class ParabolaAnalyzer {
                         }
                     }
                 }
-            }
+            },
+            plugins: [
+                {
+                    id: 'graphOverlayCard',
+                    afterDraw: (chart) => {
+                        this.drawOverlayCard(chart);
+                    }
+                }
+            ]
         };
 
         // Create the chart
         this.chart = new Chart(canvas, config);
         
+        // Setup card drag and mouse interactions
+        this.setupCanvasInteraction(canvas);
+
         // Store reference globally for other modules
         window.chartInstance = this.chart;
     }
@@ -454,6 +750,14 @@ class ParabolaAnalyzer {
 
         const y = this.evaluateQuadratic(x);
         const slope = this.calculateDerivative(x);
+
+        this.tangentData = {
+            x: x,
+            y: y,
+            slope: slope,
+            equation: this.getTangentEquation(x, y, slope),
+            visible: true
+        };
 
         // Remove existing analysis datasets
         this.chart.data.datasets = this.chart.data.datasets.filter(
@@ -653,6 +957,7 @@ class ParabolaAnalyzer {
      * @param {boolean} show - Whether to show the quadratic fit
      */
     toggleQuadraticFit(show = true) {
+        this.showQuadraticFit = show;
         if (!this.chart) return;
 
         // Remove existing quadratic fit
@@ -692,3 +997,7 @@ class ParabolaAnalyzer {
 
 // Create global instance
 let parabolaAnalyzer;
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ParabolaAnalyzer;
+}

@@ -72,12 +72,14 @@ class TangentAnalyzer {
         if (this.parabolaAnalyzer && this.parabolaAnalyzer.chart) {
             const chart = this.parabolaAnalyzer.chart;
             chart.data.datasets = chart.data.datasets.filter(ds => 
-                ds.label !== 'Tangent Line' && ds.label !== 'Selected Point'
+                ds.label !== 'Tangent Line' && ds.label !== 'Selected Point' && ds.label !== 'Vertical Line'
             );
+            if (this.parabolaAnalyzer.tangentData) {
+                this.parabolaAnalyzer.tangentData.visible = false;
+            }
             chart.update('none');
         }
     }
-
 
     updateTangentAnalysis() {
         if (!this.parabolaAnalyzer || !this.parabolaAnalyzer.coefficients) {
@@ -87,6 +89,15 @@ class TangentAnalyzer {
         // Calculate point on curve
         const y = this.parabolaAnalyzer.evaluateQuadratic(this.currentX);
         const slope = this.parabolaAnalyzer.calculateDerivative(this.currentX);
+
+        // Store tangent data for on-canvas overlay card
+        this.parabolaAnalyzer.tangentData = {
+            x: this.currentX,
+            y: y,
+            slope: slope,
+            equation: this.getTangentEquation(this.currentX, y, slope),
+            visible: true
+        };
 
         // Generate tangent line points
         const tangentPoints = this.generateTangentLine(this.currentX, y, slope);
@@ -286,3 +297,7 @@ class TangentAnalyzer {
 
 // Global instance will be created when parabola analysis is complete
 let tangentAnalyzer;
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = TangentAnalyzer;
+}

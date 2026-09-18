@@ -462,9 +462,6 @@ th, td { text-align: center; }
 #pointInfo { display: none; }
 #pointInfo.show { display: block !important; }
 
-#graphInfoBox { display: none; }
-#graphInfoBox.show { display: block !important; }
-
 .header-input {
   width: 100%;
   border: 1px dashed transparent;

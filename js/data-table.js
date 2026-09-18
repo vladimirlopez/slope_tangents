@@ -226,9 +226,30 @@ class DataTable {
                 fitBtn.classList.remove('show');
                 fitBtn.textContent = 'Show Quadratic Fit';
             }
-            
+
+            // Hide tangent button and controls
+            const tangentBtn = document.getElementById('tangentBtn');
+            if (tangentBtn) {
+                tangentBtn.style.display = 'none';
+                tangentBtn.textContent = 'Show Tangent Line';
+            }
+
+            const tangentControls = document.getElementById('tangentControls');
+            if (tangentControls) {
+                tangentControls.classList.remove('visible');
+            }
+
             // Clear the chart if it exists
-            if (window.chartInstance) {
+            if (typeof parabolaAnalyzer !== 'undefined' && parabolaAnalyzer) {
+                parabolaAnalyzer.coefficients = null;
+                parabolaAnalyzer.tangentData = null;
+                parabolaAnalyzer.cardPosition = null;
+                parabolaAnalyzer.lastBoxBounds = null;
+                const canvas = document.getElementById('chart');
+                if (canvas) {
+                    parabolaAnalyzer.createEmptyChart(canvas);
+                }
+            } else if (window.chartInstance) {
                 window.chartInstance.destroy();
                 window.chartInstance = null;
             }

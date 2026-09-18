@@ -81,10 +81,15 @@ class QuadraticRegressionApp {
                             this.fitBtn.textContent = 'Hide Quadratic Fit';
                             this.fitBtn.classList.add('show');
                         }
-                        if (this.tangentBtn) this.tangentBtn.style.display = 'inline-block';
+                        if (this.tangentBtn) {
+                            this.tangentBtn.style.display = 'inline-block';
+                            this.tangentBtn.textContent = 'Hide Tangent Line';
+                        }
                         
-                        if (isTangentShowing && tangentAnalyzer) {
+                        if (tangentAnalyzer) {
                             tangentAnalyzer.setupControls(dataPoints);
+                            const tangentControls = document.getElementById('tangentControls');
+                            if (tangentControls) tangentControls.classList.add('visible');
                         }
                     } else {
                         // Not enough points for regression, just plot points
@@ -197,6 +202,12 @@ class QuadraticRegressionApp {
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
 
+                // If hovering over the overlay card, leave cursor to card handler
+                if (parabolaAnalyzer.isPointInsideCard(x, y)) {
+                    this.canvas.title = 'Drag to reposition card';
+                    return;
+                }
+
                 const isXAxis = (y >= chart.chartArea.bottom + 8 && x >= chart.scales.x.left && x <= chart.scales.x.right);
                 const isYAxis = (x <= chart.chartArea.left && y >= chart.scales.y.top && y <= chart.scales.y.bottom);
 
@@ -218,6 +229,11 @@ class QuadraticRegressionApp {
                 const rect = this.canvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
+
+                // Ignore if clicked on the overlay card
+                if (parabolaAnalyzer.isPointInsideCard(x, y)) {
+                    return;
+                }
 
                 // Check if clicked in bottom area (X axis)
                 if (y >= chart.chartArea.bottom + 8 && x >= chart.scales.x.left && x <= chart.scales.x.right) {
@@ -434,9 +450,18 @@ class QuadraticRegressionApp {
                 // Show the fit button after successful plot
                 if (this.fitBtn) {
                     this.fitBtn.classList.add('show');
+                    this.fitBtn.textContent = 'Hide Quadratic Fit';
                 }
-                // tangent button shows up instead
-                if (this.tangentBtn) this.tangentBtn.style.display = 'inline-block';
+                // Setup and show tangent line and controls by default
+                if (this.tangentBtn) {
+                    this.tangentBtn.style.display = 'inline-block';
+                    this.tangentBtn.textContent = 'Hide Tangent Line';
+                }
+                if (tangentAnalyzer) {
+                    tangentAnalyzer.setupControls(dataPoints);
+                    const tangentControls = document.getElementById('tangentControls');
+                    if (tangentControls) tangentControls.classList.add('visible');
+                }
             }
             
             // Show success message
@@ -584,6 +609,22 @@ class QuadraticRegressionApp {
             
             // Reset analyzers
             parabolaAnalyzer = new ParabolaAnalyzer();
+            tangentAnalyzer = new TangentAnalyzer(parabolaAnalyzer);
+            if (this.fitBtn) {
+                this.fitBtn.textContent = 'Show Quadratic Fit';
+                this.fitBtn.classList.remove('show');
+            }
+            if (this.tangentBtn) {
+                this.tangentBtn.textContent = 'Show Tangent Line';
+                this.tangentBtn.style.display = 'none';
+            }
+            const tangentControls = document.getElementById('tangentControls');
+            if (tangentControls) {
+                tangentControls.classList.remove('visible');
+            }
+            if (this.canvas) {
+                parabolaAnalyzer.createEmptyChart(this.canvas);
+            }
             
             DOMUtils.hideStatus();
             DOMUtils.showStatus('Application reset successfully!', 'success');
