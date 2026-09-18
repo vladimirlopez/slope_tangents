@@ -287,11 +287,10 @@ class QuadraticRegressionApp {
     }
 
     /**
-     * Setup axes controls toolbar (include zero, position, min/max limits, reset)
+     * Setup axes controls toolbar (include zero, min/max limits, reset)
      */
     setupAxesControls() {
         const includeZeroCheckbox = document.getElementById('includeZeroCheckbox');
-        const axisPositionSelect = document.getElementById('axisPositionSelect');
         const resetAxesBtn = document.getElementById('resetAxesBtn');
         const xMinInput = document.getElementById('xMinInput');
         const xMaxInput = document.getElementById('xMaxInput');
@@ -302,15 +301,6 @@ class QuadraticRegressionApp {
             includeZeroCheckbox.addEventListener('change', (e) => {
                 if (parabolaAnalyzer) {
                     parabolaAnalyzer.setAxesConfig({ includeZero: e.target.checked });
-                    this.syncAxesInputs();
-                }
-            });
-        }
-
-        if (axisPositionSelect) {
-            axisPositionSelect.addEventListener('change', (e) => {
-                if (parabolaAnalyzer) {
-                    parabolaAnalyzer.setAxesConfig({ axisPosition: e.target.value });
                     this.syncAxesInputs();
                 }
             });
@@ -350,7 +340,6 @@ class QuadraticRegressionApp {
                 if (parabolaAnalyzer) {
                     parabolaAnalyzer.resetAxes();
                     if (includeZeroCheckbox) includeZeroCheckbox.checked = false;
-                    if (axisPositionSelect) axisPositionSelect.value = 'border';
                     if (xMinInput) xMinInput.value = '';
                     if (xMaxInput) xMaxInput.value = '';
                     if (yMinInput) yMinInput.value = '';
@@ -368,7 +357,6 @@ class QuadraticRegressionApp {
         if (!parabolaAnalyzer) return;
 
         const includeZeroCheckbox = document.getElementById('includeZeroCheckbox');
-        const axisPositionSelect = document.getElementById('axisPositionSelect');
         const xMinInput = document.getElementById('xMinInput');
         const xMaxInput = document.getElementById('xMaxInput');
         const yMinInput = document.getElementById('yMinInput');
@@ -379,9 +367,6 @@ class QuadraticRegressionApp {
 
         if (includeZeroCheckbox) {
             includeZeroCheckbox.checked = !!cfg.includeZero;
-        }
-        if (axisPositionSelect) {
-            axisPositionSelect.value = cfg.axisPosition || 'border';
         }
 
         if (xMinInput) {

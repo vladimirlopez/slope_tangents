@@ -558,35 +558,6 @@ th:hover .header-input,
   height: 15px;
 }
 
-.axes-field-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.field-label {
-  font-weight: 600;
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.axes-select {
-  flex: 1;
-  font-family: inherit;
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--ink);
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px 8px;
-  outline: none;
-  cursor: pointer;
-}
-
-.axes-select:focus {
-  border-color: var(--accent);
-}
 
 .ghost-xs {
   font-family: inherit;

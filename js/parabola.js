@@ -30,7 +30,6 @@ class ParabolaAnalyzer {
         this.dragOffset = { x: 0, y: 0 };
         this.axesConfig = {
             includeZero: false,
-            axisPosition: 'border', // 'border' or 'center'
             customXMin: null,
             customXMax: null,
             customYMin: null,
@@ -611,7 +610,6 @@ class ParabolaAnalyzer {
     resetAxes() {
         this.axesConfig = {
             includeZero: false,
-            axisPosition: 'border',
             customXMin: null,
             customXMax: null,
             customYMin: null,
@@ -669,7 +667,7 @@ class ParabolaAnalyzer {
                 scales: {
                     x: {
                         type: 'linear',
-                        position: this.axesConfig.axisPosition === 'center' ? 'center' : 'bottom',
+                        position: 'bottom',
                         min: xMin,
                         max: xMax,
                         title: {
@@ -685,7 +683,7 @@ class ParabolaAnalyzer {
                         }
                     },
                     y: {
-                        position: this.axesConfig.axisPosition === 'center' ? 'center' : 'left',
+                        position: 'left',
                         min: yMin,
                         max: yMax,
                         title: {
@@ -840,7 +838,7 @@ class ParabolaAnalyzer {
                 scales: {
                     x: {
                         type: 'linear',
-                        position: this.axesConfig.axisPosition === 'center' ? 'center' : 'bottom',
+                        position: 'bottom',
                         min: xMin,
                         max: xMax,
                         title: {
@@ -860,7 +858,7 @@ class ParabolaAnalyzer {
                         }
                     },
                     y: {
-                        position: this.axesConfig.axisPosition === 'center' ? 'center' : 'left',
+                        position: 'left',
                         min: finalYMin,
                         max: finalYMax,
                         title: {
