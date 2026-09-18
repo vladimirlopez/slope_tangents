@@ -9,7 +9,7 @@
     <title>Quadratic Regression & Tangent Lines | The Thinking Experiment</title>
     <link rel="icon" type="image/png" sizes="32x32" href="https://vladimirlopez.github.io/the-thinking-experiment/assets/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="https://vladimirlopez.github.io/the-thinking-experiment/assets/favicon-16.png" />
-    <link rel="stylesheet" href="css/styles.css?v=21">
+    <link rel="stylesheet" href="css/styles.css?v=22">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.min.js"></script>
 </head>
@@ -73,6 +73,35 @@
             <section class="panel wide visualization">
                 <h2>Graph</h2>
                 <input type="text" id="graphTitleInput" class="header-input graph-title-input" value="Quadratic Regression Analysis" title="Click to edit graph title">
+                <div class="axes-toolbar">
+                    <div class="axes-toolbar-row">
+                        <label class="axes-checkbox-label">
+                            <input type="checkbox" id="includeZeroCheckbox"> Include Origin (0,0)
+                        </label>
+                        <div class="axes-select-group">
+                            <label for="axisPositionSelect">Position:</label>
+                            <select id="axisPositionSelect" class="axes-select">
+                                <option value="border">Border</option>
+                                <option value="center">At Origin (0,0)</option>
+                            </select>
+                        </div>
+                        <button id="resetAxesBtn" class="ghost-xs" title="Reset axes to automatic data bounds">Auto Scale</button>
+                    </div>
+                    <div class="axes-toolbar-row limits-row">
+                        <div class="axis-limit-pair">
+                            <span class="limit-label">X:</span>
+                            <input type="number" id="xMinInput" placeholder="Min" class="limit-input" step="any">
+                            <span class="limit-sep">to</span>
+                            <input type="number" id="xMaxInput" placeholder="Max" class="limit-input" step="any">
+                        </div>
+                        <div class="axis-limit-pair">
+                            <span class="limit-label">Y:</span>
+                            <input type="number" id="yMinInput" placeholder="Min" class="limit-input" step="any">
+                            <span class="limit-sep">to</span>
+                            <input type="number" id="yMaxInput" placeholder="Max" class="limit-input" step="any">
+                        </div>
+                    </div>
+                </div>
                 <div class="chart-container" style="position: relative; height: 500px; width: 100%;">
                     <canvas id="chart"></canvas>
                     <input type="text" id="chartInlineLabelInput" class="chart-inline-label-input" style="display: none;" autocomplete="off" spellcheck="false">
@@ -104,10 +133,10 @@
     </div>
 
     <!-- JavaScript Modules -->
-    <script src="js/utilities.js?v=21"></script>
-    <script src="js/data-table.js?v=21"></script>
-    <script src="js/parabola.js?v=21"></script>
-    <script src="js/tangent.js?v=21"></script>
-    <script src="js/app.js?v=21"></script>
+    <script src="js/utilities.js?v=22"></script>
+    <script src="js/data-table.js?v=22"></script>
+    <script src="js/parabola.js?v=22"></script>
+    <script src="js/tangent.js?v=22"></script>
+    <script src="js/app.js?v=22"></script>
 </body>
 </html>

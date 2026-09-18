@@ -43,19 +43,35 @@ class TangentAnalyzer {
         // Calculate the range of x values
         const xValues = dataPoints.map(p => p.x);
         const xRange = MathUtils.findRange(xValues);
-        const padding = (xRange.max - xRange.min) * 0.1;
+        const padding = (xRange.max - xRange.min) * 0.1 || 1;
         
-        const xMin = xRange.min - padding;
-        const xMax = xRange.max + padding;
+        let xMin = xRange.min - padding;
+        let xMax = xRange.max + padding;
+
+        if (this.parabolaAnalyzer && this.parabolaAnalyzer.axesConfig) {
+            if (this.parabolaAnalyzer.axesConfig.includeZero) {
+                xMin = Math.min(0, xMin);
+                xMax = Math.max(0, xMax);
+            }
+            if (this.parabolaAnalyzer.axesConfig.customXMin !== null) {
+                xMin = this.parabolaAnalyzer.axesConfig.customXMin;
+            }
+            if (this.parabolaAnalyzer.axesConfig.customXMax !== null) {
+                xMax = this.parabolaAnalyzer.axesConfig.customXMax;
+            }
+        }
+        if (xMin >= xMax) xMax = xMin + 1;
         const xMid = (xMin + xMax) / 2;
 
         // Update slider properties
         this.slider.min = xMin.toString();
         this.slider.max = xMax.toString();
         this.slider.step = ((xMax - xMin) / 100).toString();
-        this.slider.value = xMid.toString();
         
-        this.currentX = xMid;
+        if (this.currentX < xMin || this.currentX > xMax) {
+            this.currentX = xMid;
+        }
+        this.slider.value = this.currentX.toString();
         
         // Show the tangent controls
         DOMUtils.toggleElement('tangentControls', true);
@@ -120,8 +136,15 @@ class TangentAnalyzer {
      */
     generateTangentLine(x0, y0, slope) {
         // Calculate the range for the tangent line
-        const xRange = parseFloat(this.slider.max) - parseFloat(this.slider.min);
-        const lineLength = xRange * 0.4; // Tangent line extends 40% of the total range in each direction
+        let xRange;
+        if (this.parabolaAnalyzer && typeof this.parabolaAnalyzer.getVisibleRange === 'function') {
+            const visible = this.parabolaAnalyzer.getVisibleRange();
+            xRange = visible.xMax - visible.xMin;
+        } else {
+            xRange = parseFloat(this.slider.max) - parseFloat(this.slider.min);
+        }
+        if (!xRange || xRange <= 0) xRange = 10;
+        const lineLength = xRange * 0.5; // Tangent line extends 50% of the visible range
         
         const xStart = x0 - lineLength / 2;
         const xEnd = x0 + lineLength / 2;

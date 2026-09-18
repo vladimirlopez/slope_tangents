@@ -28,6 +28,14 @@ class ParabolaAnalyzer {
         this.lastBoxBounds = null; // { x, y, width, height }
         this.isDraggingCard = false;
         this.dragOffset = { x: 0, y: 0 };
+        this.axesConfig = {
+            includeZero: false,
+            axisPosition: 'border', // 'border' or 'center'
+            customXMin: null,
+            customXMax: null,
+            customYMin: null,
+            customYMax: null
+        };
     }
 
     /**
@@ -520,7 +528,116 @@ class ParabolaAnalyzer {
     }
 
     /**
-     * Create or update the chart visualization
+     * Draw high-contrast lines for X = 0 and Y = 0 whenever they are in the visible range
+     * @param {Chart} chart
+     */
+    drawZeroLines(chart) {
+        const { ctx, chartArea, scales } = chart;
+        if (!chartArea || !scales || !scales.x || !scales.y) return;
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(18, 49, 64, 0.45)';
+        ctx.lineWidth = 1.5;
+
+        // Vertical line at x = 0
+        if (scales.x.min <= 0 && scales.x.max >= 0) {
+            const xPixel = scales.x.getPixelForValue(0);
+            if (xPixel >= chartArea.left - 1 && xPixel <= chartArea.right + 1) {
+                ctx.beginPath();
+                ctx.moveTo(xPixel, chartArea.top);
+                ctx.lineTo(xPixel, chartArea.bottom);
+                ctx.stroke();
+            }
+        }
+
+        // Horizontal line at y = 0
+        if (scales.y.min <= 0 && scales.y.max >= 0) {
+            const yPixel = scales.y.getPixelForValue(0);
+            if (yPixel >= chartArea.top - 1 && yPixel <= chartArea.bottom + 1) {
+                ctx.beginPath();
+                ctx.moveTo(chartArea.left, yPixel);
+                ctx.lineTo(chartArea.right, yPixel);
+                ctx.stroke();
+            }
+        }
+
+        ctx.restore();
+    }
+
+    /**
+     * Get visible axes range
+     * @returns {object} { xMin, xMax, yMin, yMax }
+     */
+    getVisibleRange() {
+        if (!this.chart || !this.chart.scales || !this.chart.scales.x || !this.chart.scales.y) {
+            return { xMin: -10, xMax: 10, yMin: -10, yMax: 10 };
+        }
+        return {
+            xMin: this.chart.scales.x.min,
+            xMax: this.chart.scales.x.max,
+            yMin: this.chart.scales.y.min,
+            yMax: this.chart.scales.y.max
+        };
+    }
+
+    /**
+     * Update axes configuration (scaling, position, zero inclusion) and redraw
+     * @param {object} newConfig
+     */
+    setAxesConfig(newConfig) {
+        this.axesConfig = { ...this.axesConfig, ...newConfig };
+        if (this.chart) {
+            const canvas = this.chart.canvas;
+            if (this.dataPoints && this.dataPoints.length > 0) {
+                this.createChart(canvas);
+                if (this.showQuadraticFit) {
+                    this.toggleQuadraticFit(true);
+                }
+                if (typeof tangentAnalyzer !== 'undefined' && tangentAnalyzer) {
+                    tangentAnalyzer.setupControls(this.dataPoints);
+                }
+                if (this.tangentData && this.tangentData.visible) {
+                    this.updatePointAnalysis(this.tangentData.x);
+                }
+            } else {
+                this.createEmptyChart(canvas);
+            }
+        }
+    }
+
+    /**
+     * Reset axes back to automatic data bounds
+     */
+    resetAxes() {
+        this.axesConfig = {
+            includeZero: false,
+            axisPosition: 'border',
+            customXMin: null,
+            customXMax: null,
+            customYMin: null,
+            customYMax: null
+        };
+        if (this.chart) {
+            const canvas = this.chart.canvas;
+            if (this.dataPoints && this.dataPoints.length > 0) {
+                this.createChart(canvas);
+                if (this.showQuadraticFit) {
+                    this.toggleQuadraticFit(true);
+                }
+                if (typeof tangentAnalyzer !== 'undefined' && tangentAnalyzer) {
+                    tangentAnalyzer.setupControls(this.dataPoints);
+                }
+                if (this.tangentData && this.tangentData.visible) {
+                    this.updatePointAnalysis(this.tangentData.x);
+                }
+            } else {
+                this.createEmptyChart(canvas);
+            }
+        }
+    }
+
+    /**
+     * Create or update the chart visualization with empty data
      * @param {HTMLCanvasElement} canvas - Canvas element for the chart
      */
     createEmptyChart(canvas) {
@@ -530,6 +647,14 @@ class ParabolaAnalyzer {
         this.tangentData = null;
         this.cardPosition = null;
         this.lastBoxBounds = null;
+
+        let xMin = this.axesConfig.customXMin !== null ? this.axesConfig.customXMin : (this.axesConfig.includeZero ? 0 : -10);
+        let xMax = this.axesConfig.customXMax !== null ? this.axesConfig.customXMax : 10;
+        let yMin = this.axesConfig.customYMin !== null ? this.axesConfig.customYMin : (this.axesConfig.includeZero ? 0 : -10);
+        let yMax = this.axesConfig.customYMax !== null ? this.axesConfig.customYMax : 10;
+
+        if (xMin >= xMax) xMax = xMin + 1;
+        if (yMin >= yMax) yMax = yMin + 1;
         
         const config = {
             type: 'scatter',
@@ -543,28 +668,48 @@ class ParabolaAnalyzer {
                 },
                 scales: {
                     x: {
-                        type: 'linear', position: 'bottom',
-                        min: -10, max: 10,
+                        type: 'linear',
+                        position: this.axesConfig.axisPosition === 'center' ? 'center' : 'bottom',
+                        min: xMin,
+                        max: xMax,
                         title: {
                             display: true,
                             text: this.getAxisLabels().x,
                             font: { size: 14, weight: '600', family: "'IBM Plex Sans', 'Inter', sans-serif" },
                             color: '#123140'
                         },
-                        grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
+                        grid: {
+                            display: true,
+                            color: (context) => (context.tick && context.tick.value === 0 ? '#123140' : 'rgba(0, 0, 0, 0.1)'),
+                            lineWidth: (context) => (context.tick && context.tick.value === 0 ? 2 : 1)
+                        }
                     },
                     y: {
-                        min: -10, max: 10,
+                        position: this.axesConfig.axisPosition === 'center' ? 'center' : 'left',
+                        min: yMin,
+                        max: yMax,
                         title: {
                             display: true,
                             text: this.getAxisLabels().y,
                             font: { size: 14, weight: '600', family: "'IBM Plex Sans', 'Inter', sans-serif" },
                             color: '#123140'
                         },
-                        grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
+                        grid: {
+                            display: true,
+                            color: (context) => (context.tick && context.tick.value === 0 ? '#123140' : 'rgba(0, 0, 0, 0.1)'),
+                            lineWidth: (context) => (context.tick && context.tick.value === 0 ? 2 : 1)
+                        }
                     }
                 }
-            }
+            },
+            plugins: [
+                {
+                    id: 'zeroLines',
+                    beforeDraw: (chart) => {
+                        this.drawZeroLines(chart);
+                    }
+                }
+            ]
         };
         this.chart = new Chart(canvas, config);
         window.chartInstance = this.chart;
@@ -586,13 +731,17 @@ class ParabolaAnalyzer {
         const xValues = this.dataPoints.map(p => p.x);
         const xRange = MathUtils.findRange(xValues);
         const padding = (xRange.max - xRange.min) * 0.2 || 2;
-        const xMin = xRange.min - padding;
-        const xMax = xRange.max + padding;
+        let xMin = xRange.min - padding;
+        let xMax = xRange.max + padding;
 
-        // Generate curve points
-        const curvePoints = this.generateCurvePoints(xMin, xMax);
+        if (this.axesConfig.includeZero) {
+            xMin = Math.min(0, xMin);
+            xMax = Math.max(0, xMax);
+        }
+        if (this.axesConfig.customXMin !== null) xMin = this.axesConfig.customXMin;
+        if (this.axesConfig.customXMax !== null) xMax = this.axesConfig.customXMax;
+        if (xMin >= xMax) xMax = xMin + 1;
 
-        
         // Calculate y bounds from data and curve
         let yMin = Infinity;
         let yMax = -Infinity;
@@ -600,7 +749,9 @@ class ParabolaAnalyzer {
             if (p.y < yMin) yMin = p.y;
             if (p.y > yMax) yMax = p.y;
         });
-        
+
+        // Generate curve points across the visible xMin to xMax range
+        const curvePoints = this.coefficients ? this.generateCurvePoints(xMin, xMax) : [];
         if (this.coefficients) {
             curvePoints.forEach(p => {
                 if (p.y < yMin) yMin = p.y;
@@ -610,10 +761,16 @@ class ParabolaAnalyzer {
         
         if (yMin === Infinity) { yMin = -10; yMax = 10; }
         const yPadding = (yMax - yMin) * 0.15 || 2;
-        const finalYMin = yMin - yPadding;
-        const finalYMax = yMax + yPadding;
+        let finalYMin = yMin - yPadding;
+        let finalYMax = yMax + yPadding;
 
-
+        if (this.axesConfig.includeZero) {
+            finalYMin = Math.min(0, finalYMin);
+            finalYMax = Math.max(0, finalYMax);
+        }
+        if (this.axesConfig.customYMin !== null) finalYMin = this.axesConfig.customYMin;
+        if (this.axesConfig.customYMax !== null) finalYMax = this.axesConfig.customYMax;
+        if (finalYMin >= finalYMax) finalYMax = finalYMin + 1;
 
         // Create chart datasets (only data points initially)
         const datasets = [
@@ -683,7 +840,7 @@ class ParabolaAnalyzer {
                 scales: {
                     x: {
                         type: 'linear',
-                        position: 'bottom',
+                        position: this.axesConfig.axisPosition === 'center' ? 'center' : 'bottom',
                         min: xMin,
                         max: xMax,
                         title: {
@@ -698,10 +855,12 @@ class ParabolaAnalyzer {
                         },
                         grid: {
                             display: true,
-                            color: 'rgba(0, 0, 0, 0.1)'
+                            color: (context) => (context.tick && context.tick.value === 0 ? '#123140' : 'rgba(0, 0, 0, 0.1)'),
+                            lineWidth: (context) => (context.tick && context.tick.value === 0 ? 2 : 1)
                         }
                     },
                     y: {
+                        position: this.axesConfig.axisPosition === 'center' ? 'center' : 'left',
                         min: finalYMin,
                         max: finalYMax,
                         title: {
@@ -716,12 +875,19 @@ class ParabolaAnalyzer {
                         },
                         grid: {
                             display: true,
-                            color: 'rgba(0, 0, 0, 0.1)'
+                            color: (context) => (context.tick && context.tick.value === 0 ? '#123140' : 'rgba(0, 0, 0, 0.1)'),
+                            lineWidth: (context) => (context.tick && context.tick.value === 0 ? 2 : 1)
                         }
                     }
                 }
             },
             plugins: [
+                {
+                    id: 'zeroLines',
+                    beforeDraw: (chart) => {
+                        this.drawZeroLines(chart);
+                    }
+                },
                 {
                     id: 'graphOverlayCard',
                     afterDraw: (chart) => {
@@ -824,11 +990,10 @@ class ParabolaAnalyzer {
      * @returns {Array} Array of {x, y} points for tangent line
      */
     generateTangentLine(x0, y0, slope) {
-        // Calculate the range for the tangent line
-        const xValues = this.dataPoints.map(p => p.x);
-        const xRange = MathUtils.findRange(xValues);
-        const totalRange = xRange.max - xRange.min;
-        const lineLength = totalRange * 0.6; // Tangent line extends 60% of the total range in each direction
+        // Calculate the range for the tangent line using visible range
+        const visible = this.getVisibleRange();
+        const totalRange = (visible.xMax - visible.xMin) || 10;
+        const lineLength = totalRange * 0.6; // Tangent line extends 60% of visible range in each direction
         
         const xStart = x0 - lineLength / 2;
         const xEnd = x0 + lineLength / 2;
@@ -966,12 +1131,10 @@ class ParabolaAnalyzer {
         );
 
         if (show) {
-            // Calculate plot range
-            const xValues = this.dataPoints.map(p => p.x);
-            const xRange = MathUtils.findRange(xValues);
-            const padding = (xRange.max - xRange.min) * 0.2 || 2;
-            const xMin = xRange.min - padding;
-            const xMax = xRange.max + padding;
+            // Calculate plot range from visible range
+            const visible = this.getVisibleRange();
+            const xMin = visible.xMin;
+            const xMax = visible.xMax;
 
             // Generate curve points
             const curvePoints = this.generateCurvePoints(xMin, xMax);

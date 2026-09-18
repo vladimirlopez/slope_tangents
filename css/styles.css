@@ -515,3 +515,131 @@ th:hover .header-input,
   text-align: center;
 }
 
+/* Axes Toolbar */
+.axes-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  background: #f8fbfe;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  margin: 0.4rem 0 0.8rem 0;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+
+.axes-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.axes-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.axes-checkbox-label input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+}
+
+.axes-select-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 500;
+}
+
+.axes-select {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 6px;
+  outline: none;
+  cursor: pointer;
+}
+
+.axes-select:focus {
+  border-color: var(--accent);
+}
+
+.ghost-xs {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 5px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ghost-xs:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.limits-row {
+  border-top: 1px solid rgba(200, 219, 227, 0.5);
+  padding-top: 0.4rem;
+  justify-content: flex-start;
+  gap: 1.2rem;
+}
+
+.axis-limit-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.limit-label {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.8rem;
+}
+
+.limit-sep {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.limit-input {
+  font-family: inherit;
+  font-size: 0.8rem;
+  width: 68px;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #ffffff;
+  color: var(--ink);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.limit-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(15, 126, 155, 0.15);
+}
+
+.limit-input::placeholder {
+  color: #9bb1bc;
+  font-size: 0.75rem;
+}
+

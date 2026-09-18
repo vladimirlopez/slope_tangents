@@ -91,13 +91,18 @@ class QuadraticRegressionApp {
                             const tangentControls = document.getElementById('tangentControls');
                             if (tangentControls) tangentControls.classList.add('visible');
                         }
+                        this.syncAxesInputs();
                     } else {
                         // Not enough points for regression, just plot points
                         parabolaAnalyzer.coefficients = null;
                         parabolaAnalyzer.createChart(this.canvas);
+                        this.syncAxesInputs();
                     }
                 } else {
-                    if (this.canvas) { parabolaAnalyzer.createEmptyChart(this.canvas); }
+                    if (this.canvas) {
+                        parabolaAnalyzer.createEmptyChart(this.canvas);
+                        this.syncAxesInputs();
+                    }
                 }
             });
         }
@@ -265,14 +270,136 @@ class QuadraticRegressionApp {
             });
         }
 
+        // Setup axes controls toolbar
+        this.setupAxesControls();
+
         // Setup event listeners
         this.setupEventListeners();
         
         // Add sample data button (for development/demo)
         this.addSampleDataButton();
         
-        if (this.canvas) { parabolaAnalyzer.createEmptyChart(this.canvas); }
+        if (this.canvas) {
+            parabolaAnalyzer.createEmptyChart(this.canvas);
+            this.syncAxesInputs();
+        }
         console.log('Quadratic Regression App initialized successfully');
+    }
+
+    /**
+     * Setup axes controls toolbar (include zero, position, min/max limits, reset)
+     */
+    setupAxesControls() {
+        const includeZeroCheckbox = document.getElementById('includeZeroCheckbox');
+        const axisPositionSelect = document.getElementById('axisPositionSelect');
+        const resetAxesBtn = document.getElementById('resetAxesBtn');
+        const xMinInput = document.getElementById('xMinInput');
+        const xMaxInput = document.getElementById('xMaxInput');
+        const yMinInput = document.getElementById('yMinInput');
+        const yMaxInput = document.getElementById('yMaxInput');
+
+        if (includeZeroCheckbox) {
+            includeZeroCheckbox.addEventListener('change', (e) => {
+                if (parabolaAnalyzer) {
+                    parabolaAnalyzer.setAxesConfig({ includeZero: e.target.checked });
+                    this.syncAxesInputs();
+                }
+            });
+        }
+
+        if (axisPositionSelect) {
+            axisPositionSelect.addEventListener('change', (e) => {
+                if (parabolaAnalyzer) {
+                    parabolaAnalyzer.setAxesConfig({ axisPosition: e.target.value });
+                    this.syncAxesInputs();
+                }
+            });
+        }
+
+        const applyLimitInputs = () => {
+            if (!parabolaAnalyzer) return;
+            const xMinVal = xMinInput && xMinInput.value.trim() !== '' ? parseFloat(xMinInput.value) : null;
+            const xMaxVal = xMaxInput && xMaxInput.value.trim() !== '' ? parseFloat(xMaxInput.value) : null;
+            const yMinVal = yMinInput && yMinInput.value.trim() !== '' ? parseFloat(yMinInput.value) : null;
+            const yMaxVal = yMaxInput && yMaxInput.value.trim() !== '' ? parseFloat(yMaxInput.value) : null;
+
+            parabolaAnalyzer.setAxesConfig({
+                customXMin: !isNaN(xMinVal) ? xMinVal : null,
+                customXMax: !isNaN(xMaxVal) ? xMaxVal : null,
+                customYMin: !isNaN(yMinVal) ? yMinVal : null,
+                customYMax: !isNaN(yMaxVal) ? yMaxVal : null
+            });
+            this.syncAxesInputs();
+        };
+
+        [xMinInput, xMaxInput, yMinInput, yMaxInput].forEach(input => {
+            if (input) {
+                input.addEventListener('change', applyLimitInputs);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        applyLimitInputs();
+                        input.blur();
+                    }
+                });
+            }
+        });
+
+        if (resetAxesBtn) {
+            resetAxesBtn.addEventListener('click', () => {
+                if (parabolaAnalyzer) {
+                    parabolaAnalyzer.resetAxes();
+                    if (includeZeroCheckbox) includeZeroCheckbox.checked = false;
+                    if (axisPositionSelect) axisPositionSelect.value = 'border';
+                    if (xMinInput) xMinInput.value = '';
+                    if (xMaxInput) xMaxInput.value = '';
+                    if (yMinInput) yMinInput.value = '';
+                    if (yMaxInput) yMaxInput.value = '';
+                    this.syncAxesInputs();
+                }
+            });
+        }
+    }
+
+    /**
+     * Sync input placeholders/values and controls to active axes settings
+     */
+    syncAxesInputs() {
+        if (!parabolaAnalyzer) return;
+
+        const includeZeroCheckbox = document.getElementById('includeZeroCheckbox');
+        const axisPositionSelect = document.getElementById('axisPositionSelect');
+        const xMinInput = document.getElementById('xMinInput');
+        const xMaxInput = document.getElementById('xMaxInput');
+        const yMinInput = document.getElementById('yMinInput');
+        const yMaxInput = document.getElementById('yMaxInput');
+
+        const cfg = parabolaAnalyzer.axesConfig;
+        const visible = parabolaAnalyzer.getVisibleRange();
+
+        if (includeZeroCheckbox) {
+            includeZeroCheckbox.checked = !!cfg.includeZero;
+        }
+        if (axisPositionSelect) {
+            axisPositionSelect.value = cfg.axisPosition || 'border';
+        }
+
+        if (xMinInput) {
+            xMinInput.value = cfg.customXMin !== null ? cfg.customXMin : '';
+            xMinInput.placeholder = visible.xMin !== undefined ? MathUtils.formatNumber(visible.xMin, 1) : 'Min';
+        }
+        if (xMaxInput) {
+            xMaxInput.value = cfg.customXMax !== null ? cfg.customXMax : '';
+            xMaxInput.placeholder = visible.xMax !== undefined ? MathUtils.formatNumber(visible.xMax, 1) : 'Max';
+        }
+        if (yMinInput) {
+            yMinInput.value = cfg.customYMin !== null ? cfg.customYMin : '';
+            yMinInput.placeholder = visible.yMin !== undefined ? MathUtils.formatNumber(visible.yMin, 1) : 'Min';
+        }
+        if (yMaxInput) {
+            yMaxInput.value = cfg.customYMax !== null ? cfg.customYMax : '';
+            yMaxInput.placeholder = visible.yMax !== undefined ? MathUtils.formatNumber(visible.yMax, 1) : 'Max';
+        }
     }
 
     /**
@@ -462,6 +589,7 @@ class QuadraticRegressionApp {
                     const tangentControls = document.getElementById('tangentControls');
                     if (tangentControls) tangentControls.classList.add('visible');
                 }
+                this.syncAxesInputs();
             }
             
             // Show success message
@@ -625,6 +753,7 @@ class QuadraticRegressionApp {
             if (this.canvas) {
                 parabolaAnalyzer.createEmptyChart(this.canvas);
             }
+            this.syncAxesInputs();
             
             DOMUtils.hideStatus();
             DOMUtils.showStatus('Application reset successfully!', 'success');
