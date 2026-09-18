@@ -515,35 +515,40 @@ th:hover .header-input,
   text-align: center;
 }
 
-/* Axes Toolbar */
-.axes-toolbar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  background: #f8fbfe;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.5rem 0.8rem;
-  margin: 0.4rem 0 0.8rem 0;
-  font-size: 0.82rem;
-  color: var(--ink);
+/* Axes Controls (Sidebar Card) */
+.axes-controls {
+  margin-top: 0.9rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
 }
 
-.axes-toolbar-row {
+.axes-controls-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.axes-controls-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.axes-controls-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  font-size: 0.84rem;
 }
 
 .axes-checkbox-label {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   font-weight: 500;
   cursor: pointer;
   user-select: none;
+  color: var(--ink);
 }
 
 .axes-checkbox-label input[type="checkbox"] {
@@ -553,22 +558,28 @@ th:hover .header-input,
   height: 15px;
 }
 
-.axes-select-group {
-  display: inline-flex;
+.axes-field-row {
+  display: flex;
   align-items: center;
-  gap: 0.35rem;
-  font-weight: 500;
+  gap: 0.5rem;
+}
+
+.field-label {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .axes-select {
+  flex: 1;
   font-family: inherit;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 500;
   color: var(--ink);
   background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 3px 6px;
+  border-radius: 6px;
+  padding: 4px 8px;
   outline: none;
   cursor: pointer;
 }
@@ -579,13 +590,13 @@ th:hover .header-input,
 
 .ghost-xs {
   font-family: inherit;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
   background: transparent;
   color: var(--accent);
   border: 1px solid var(--accent);
   border-radius: 5px;
-  padding: 3px 8px;
+  padding: 2px 7px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -595,15 +606,18 @@ th:hover .header-input,
   color: #ffffff;
 }
 
-.limits-row {
-  border-top: 1px solid rgba(200, 219, 227, 0.5);
-  padding-top: 0.4rem;
-  justify-content: flex-start;
-  gap: 1.2rem;
+.axes-limits-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  background: #f8fbfe;
+  border: 1px solid var(--border);
+  border-radius: 6px;
 }
 
 .axis-limit-pair {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.35rem;
 }
@@ -612,6 +626,7 @@ th:hover .header-input,
   font-weight: 700;
   color: var(--accent);
   font-size: 0.8rem;
+  width: 14px;
 }
 
 .limit-sep {
@@ -620,9 +635,9 @@ th:hover .header-input,
 }
 
 .limit-input {
+  flex: 1;
   font-family: inherit;
   font-size: 0.8rem;
-  width: 68px;
   padding: 3px 6px;
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -631,6 +646,7 @@ th:hover .header-input,
   text-align: center;
   outline: none;
   transition: border-color 0.15s;
+  min-width: 0;
 }
 
 .limit-input:focus {
